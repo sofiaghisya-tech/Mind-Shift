@@ -1,866 +1,720 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-<title>MIND-SHIFT — Cognitive Protocol</title>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MIND-SHIFT | Digital First-Aid Kit</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --obsidian: #0F1117;
-    --panel: #161922;
-    --panel-raised: #1B1F2B;
-    --hairline: #262B38;
-    --sage: #B2AC88;
-    --sage-dim: #7E795F;
-    --lilac: #E6E6FA;
-    --lilac-dim: #9B9BB5;
-    --risk: #C4685D;
-    --risk-dim: #6B3D38;
+    --obsidian:#0F1117;
+    --slate-1:#1A1D27;
+    --slate-2:#22263A;
+    --slate-3:#2C3150;
+    --sage:#8A9A6A;
+    --sage-light:#B2AC88;
+    --lilac:#E6E6FA;
+    --danger:#E2574C;
+  }
+  *{ -webkit-tap-highlight-color: transparent; }
+  html,body{
+    background:var(--obsidian);
+    font-family:'Inter',sans-serif;
+    overscroll-behavior:none;
+  }
+  .font-mono-tab{ font-family:'Roboto Mono',monospace; font-variant-numeric: tabular-nums; }
+  #app-shell{
+    max-width:390px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--obsidian);
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 0 60px rgba(0,0,0,0.6);
+  }
+  .screen{ display:flex; flex-direction:column; min-height:100vh; padding-bottom:96px; }
+  .hidden-screen{ display:none !important; }
+
+  /* ---- Radar (JITAI Simulation) ---- */
+  .radar-wrap{
+    position:relative; width:280px; height:280px; margin:0 auto;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .radar-ring{
+    position:absolute; border-radius:50%;
+    border:1px solid rgba(138,154,106,0.25);
+  }
+  .radar-ring.r1{ width:100%; height:100%; }
+  .radar-ring.r2{ width:72%; height:72%; }
+  .radar-ring.r3{ width:44%; height:44%; }
+  .radar-pulse{
+    position:absolute; width:100%; height:100%; border-radius:50%;
+    border:1px solid var(--sage);
+    animation: pulseOut 2.6s cubic-bezier(.2,.6,.4,1) infinite;
+    opacity:0;
+  }
+  .radar-pulse.delay2{ animation-delay:1.3s; }
+  @keyframes pulseOut{
+    0%{ transform:scale(0.3); opacity:0.7; }
+    100%{ transform:scale(1.05); opacity:0; }
+  }
+  .radar-center{
+    width:14px; height:14px; border-radius:50%;
+    background:var(--sage); box-shadow:0 0 14px 2px rgba(138,154,106,0.7);
+    z-index:10;
+  }
+  .risk-dot{
+    position:absolute; top:28%; left:68%;
+    width:11px; height:11px; border-radius:50%;
+    background:var(--danger);
+    box-shadow:0 0 0 0 rgba(226,87,76,0.6);
+    animation: riskBlink 1.6s ease-in-out infinite;
+    z-index:11;
+  }
+  @keyframes riskBlink{
+    0%,100%{ box-shadow:0 0 0 0 rgba(226,87,76,0.55); }
+    50%{ box-shadow:0 0 0 8px rgba(226,87,76,0); }
+  }
+  .risk-tag{
+    position:absolute; top:33%; left:74%;
+    white-space:nowrap; font-size:10px; line-height:1.3;
+    color:#F2B5AE; background:rgba(226,87,76,0.12);
+    border:1px solid rgba(226,87,76,0.35);
+    padding:3px 7px; border-radius:6px;
   }
 
-  *{ box-sizing: border-box; }
-  html,body{ background: var(--obsidian); margin:0; padding:0; }
-  #root{ min-height:100vh; }
-
-  body{
-    font-family: 'Inter', sans-serif;
-    color: var(--lilac);
-    -webkit-font-smoothing: antialiased;
-    overscroll-behavior: none;
+  /* ---- Emergency Card Slide-in ---- */
+  .jitai-card{ animation: cardRise 0.45s cubic-bezier(.16,.8,.3,1) both; }
+  @keyframes cardRise{
+    from{ opacity:0; transform:translateY(18px) scale(0.98); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+  }
+  .safe-banner{ animation: fadeSlide 0.4s ease both; }
+  @keyframes fadeSlide{
+    from{ opacity:0; transform:translateY(-6px); }
+    to{ opacity:1; transform:translateY(0); }
   }
 
-  .font-display{ font-family: 'Space Grotesk', sans-serif; }
-  .font-mono{ font-family: 'IBM Plex Mono', monospace; }
-
-  .tnum{ font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
-
-  ::-webkit-scrollbar{ width:0px; height:0px; }
-
-  @keyframes sweep{
-    from{ transform: rotate(0deg); }
-    to{ transform: rotate(360deg); }
+  /* ---- ABM Game Arena ---- */
+  #game-arena{
+    position:relative; width:100%; height:380px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(138,154,106,0.05), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(226,87,76,0.04), transparent 40%),
+      var(--slate-1);
+    border:1px solid var(--slate-3);
+    border-radius:18px;
+    overflow:hidden;
   }
-  .radar-sweep{
-    animation: sweep 4s linear infinite;
-    transform-origin: center;
+  .target{
+    position:absolute;
+    animation: targetIn 0.22s ease both;
+    user-select:none;
   }
-
-  @keyframes blipPulse{
-    0%,100%{ opacity:0.35; r:4; }
-    50%{ opacity:1; r:7; }
-  }
-  .blip-pulse{ animation: blipPulse 1.8s ease-in-out infinite; }
-
   @keyframes targetIn{
-    from{ transform: scale(0); opacity:0; }
-    to{ transform: scale(1); opacity:1; }
+    from{ opacity:0; transform:scale(0.7); }
+    to{ opacity:1; transform:scale(1); }
   }
-  @keyframes targetSquish{
-    0%{ transform: scale(1); opacity:1; }
-    50%{ transform: scale(1.35); opacity:0.6; }
-    100%{ transform: scale(0); opacity:0; }
+  .target.expiring{ animation: targetOut 0.25s ease forwards; }
+  @keyframes targetOut{
+    from{ opacity:1; transform:scale(1); }
+    to{ opacity:0; transform:scale(0.75); }
   }
-  .target-spawn{ animation: targetIn 0.18s ease-out; }
-  .target-squish{ animation: targetSquish 0.22s ease-in forwards; }
-
-  @keyframes fadeUp{
-    from{ opacity:0; transform: translateY(6px); }
-    to{ opacity:1; transform: translateY(0); }
+  .float-score{
+    position:absolute; font-weight:700; font-size:14px;
+    pointer-events:none;
+    animation: floatUp 0.9s ease-out forwards;
+    z-index:30;
   }
-  .fade-up{ animation: fadeUp 0.35s ease-out; }
-
-  @keyframes barGrow{
-    from{ width:0%; }
-  }
-  .bar-grow{ animation: barGrow 1.1s cubic-bezier(0.16,1,0.3,1); }
-
-  @media (prefers-reduced-motion: reduce){
-    .radar-sweep, .blip-pulse, .target-spawn, .target-squish, .fade-up, .bar-grow{
-      animation: none !important;
-    }
+  @keyframes floatUp{
+    0%{ opacity:1; transform:translateY(0); }
+    100%{ opacity:0; transform:translateY(-38px); }
   }
 
-  .focus-ring:focus-visible{
-    outline: 2px solid var(--sage);
-    outline-offset: 2px;
+  /* ---- PFC Recovery Bar ---- */
+  .pfc-bar-bg{ background:var(--slate-3); border-radius:999px; height:10px; overflow:hidden; }
+  .pfc-bar-fill{
+    height:100%; border-radius:999px;
+    background:linear-gradient(90deg, #6B7A52, var(--sage), var(--sage-light));
+    transition: width 0.6s ease;
   }
 
-  .grain-overlay{
-    background-image: radial-gradient(circle at 1px 1px, rgba(230,230,250,0.04) 1px, transparent 0);
-    background-size: 14px 14px;
+  /* ---- Mood TTM Buttons ---- */
+  .mood-btn{ transition: all 0.2s ease; }
+  .mood-btn.active{
+    background:var(--sage) !important;
+    color:#10130C !important;
+    border-color:var(--sage) !important;
   }
+
+  /* ---- Bottom Navigation ---- */
+  #bottom-nav{
+    position:absolute; bottom:0; left:0; right:0;
+    height:64px;
+    background:rgba(15,17,23,0.78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-top:1px solid rgba(255,255,255,0.06);
+    display:flex; align-items:center; justify-content:space-around;
+    max-width:390px; margin:0 auto;
+    z-index:50;
+  }
+  .nav-btn{ display:flex; flex-direction:column; align-items:center; gap:4px; color:#6B7280; transition: color 0.2s ease; }
+  .nav-btn.active{ color:var(--sage); }
+  .nav-btn svg{ stroke:#6B7280; transition: stroke 0.2s ease; }
+  .nav-btn.active svg{ stroke:var(--sage); filter:drop-shadow(0 0 6px rgba(138,154,106,0.5)); }
+
+  .card{ background:var(--slate-2); border:1px solid var(--slate-3); border-radius:18px; }
+  .scrollbar-none::-webkit-scrollbar{ display:none; }
 </style>
 </head>
 <body>
-<div id="root"></div>
 
-<script type="text/babel" data-presets="react,env">
-const { useState, useEffect, useRef, useCallback, useMemo } = React;
+<div id="app-shell">
 
-/* ============================================================
-   ICONS — clean inline SVG, single stroke weight, no emojis
-   ============================================================ */
-const Icon = ({ name, size = 20, className = "" }) => {
-  const common = {
-    width: size, height: size, viewBox: "0 0 24 24",
-    fill: "none", stroke: "currentColor", strokeWidth: 1.6,
-    strokeLinecap: "round", strokeLinejoin: "round",
-    className
-  };
-  switch (name) {
-    case "dashboard":
-      return <svg {...common}><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>;
-    case "protocol":
-      return <svg {...common}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>;
-    case "monitor":
-      return <svg {...common}><path d="M3 11a9 9 0 0 1 18 0"/><path d="M5 11a7 7 0 0 1 14 0"/><circle cx="12" cy="17" r="1.4" fill="currentColor" stroke="none"/><path d="M12 11v3"/></svg>;
-    case "flame":
-      return <svg {...common}><path d="M12 2c1 3-3 4-3 8a4 4 0 0 0 8 0c0-1.5-1-2.5-1-2.5.5 2-1 3-2 3a2 2 0 0 1-2-2c0-2 2-3 2-6.5z"/></svg>;
-    case "brain":
-      return <svg {...common}><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5h2"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5h-2"/><path d="M9 4v15"/><path d="M15 4v15"/></svg>;
-    case "spark":
-      return <svg {...common}><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M18.4 5.6l-2.8 2.8M8.4 15.6l-2.8 2.8"/></svg>;
-    case "cp":
-      return <svg {...common}><polygon points="12 2 19 6 19 14 12 18 5 14 5 6"/><polygon points="12 7 15.5 9 15.5 13 12 15 8.5 13 8.5 9"/></svg>;
-    case "back":
-      return <svg {...common}><path d="M15 5l-7 7 7 7"/></svg>;
-    case "timer":
-      return <svg {...common}><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/></svg>;
-    case "target-hex":
-      return <svg viewBox="0 0 40 40" width="100%" height="100%" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
-        <polygon points="20,3 34,11.5 34,28.5 20,37 6,28.5 6,11.5" />
-        <polygon points="20,11 27,15.5 27,24.5 20,29 13,24.5 13,15.5" />
-        <circle cx="20" cy="20" r="2.4" fill="currentColor" stroke="none"/>
-      </svg>;
-    case "check":
-      return <svg {...common}><path d="M4 12l5 5L20 6"/></svg>;
-    case "alert":
-      return <svg {...common}><path d="M12 3l9 17H3z"/><path d="M12 10v4"/><circle cx="12" cy="17.2" r="0.4" fill="currentColor"/></svg>;
-    case "shield":
-      return <svg {...common}><path d="M12 3l8 3v6c0 5-3.5 7.8-8 9-4.5-1.2-8-4-8-9V6z"/><path d="M9 12l2.2 2.2L15.5 9.5"/></svg>;
-    case "rotate":
-      return <svg {...common}><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-6h6"/></svg>;
-    case "pin":
-      return <svg {...common}><path d="M12 21s7-7.2 7-12a7 7 0 1 0-14 0c0 4.8 7 12 7 12z"/><circle cx="12" cy="9" r="2.4"/></svg>;
-    case "list":
-      return <svg {...common}><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>;
-    case "close":
-      return <svg {...common}><path d="M5 5l14 14M19 5L5 19"/></svg>;
-    case "trend":
-      return <svg {...common}><path d="M3 17l5-5 4 4 8-9"/><path d="M16 6h4v4"/></svg>;
-    default:
-      return null;
-  }
+  <!-- ======================= TAB 1: DASHBOARD / REWARD ======================= -->
+  <section id="screen-home" class="screen">
+
+    <header class="px-5 pt-6 pb-3">
+      <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">PROFIL PEMULIHAN</p>
+      <h1 class="text-[20px] font-bold text-white mt-0.5">Dashboard</h1>
+    </header>
+
+    <!-- Metrik utama -->
+    <div class="px-5 mt-2 grid grid-cols-2 gap-3">
+      <div class="card p-4">
+        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Poin Kognitif</p>
+        <p id="dash-cp" class="text-[24px] font-bold text-white mt-1 font-mono-tab">1,250</p>
+        <p class="text-[11px] text-slate-500 mt-0.5">CP terkumpul</p>
+      </div>
+      <div class="card p-4">
+        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Hari Bersih</p>
+        <p class="text-[24px] font-bold mt-1 font-mono-tab" style="color:var(--sage-light);">12</p>
+        <p class="text-[11px] text-slate-500 mt-0.5">hari berturut-turut</p>
+      </div>
+    </div>
+
+    <!-- PFC Recovery -->
+    <div class="px-5 mt-4">
+      <div class="card p-4">
+        <div class="flex items-center justify-between mb-2.5">
+          <p class="text-[12.5px] font-semibold text-white">Pemulihan Prefrontal Cortex</p>
+          <p id="pfc-percent" class="text-[12.5px] font-bold font-mono-tab" style="color:var(--sage-light);">50%</p>
+        </div>
+        <div class="pfc-bar-bg">
+          <div id="pfc-bar-fill" class="pfc-bar-fill" style="width:50%;"></div>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-2.5 leading-relaxed">Estimasi regulasi sirkuit dopamin berdasarkan konsistensi sesi defleksi kognitif Anda.</p>
+      </div>
+    </div>
+
+    <!-- Status kesiapan mental Berbasis TTM -->
+    <div class="px-5 mt-4">
+      <div class="card p-4">
+        <p class="text-[12.5px] font-semibold text-white mb-3">Status Kesiapan Mental</p>
+        <div class="grid grid-cols-2 gap-2">
+          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'belum')">Belum Tertarik</button>
+          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'ragu')">Ragu-ragu</button>
+          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'siap')">Siap Beraksi</button>
+          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'detoks')">Sedang Detoks</button>
+        </div>
+        <div id="mood-feedback" class="mt-3 text-[12px] text-slate-400 leading-relaxed hidden-screen"></div>
+      </div>
+    </div>
+
+    <div class="px-5 mt-4 mb-2">
+      <div class="card p-4">
+        <p class="text-[12.5px] font-semibold text-white mb-1">Riwayat Sesi Terakhir</p>
+        <p id="last-session-log" class="text-[12px] text-slate-500">Belum ada sesi yang tercatat hari ini.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ======================= TAB 2: INTERVENSI ABM GAME ======================= -->
+  <section id="screen-game" class="screen hidden-screen">
+
+    <header class="px-5 pt-6 pb-3">
+      <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">SESI INTERVENSI</p>
+      <h1 class="text-[20px] font-bold text-white mt-0.5">Defleksi Kognitif</h1>
+    </header>
+
+    <!-- Panel atas HUD -->
+    <div class="px-5">
+      <div class="card p-4 flex items-center justify-between">
+        <div class="text-center flex-1">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500">Waktu</p>
+          <p id="game-timer" class="text-[19px] font-bold font-mono-tab mt-0.5" style="color:var(--lilac);">03:00</p>
+        </div>
+        <div class="w-px h-9" style="background:var(--slate-3);"></div>
+        <div class="text-center flex-1">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500">Skor</p>
+          <p id="game-score" class="text-[19px] font-bold font-mono-tab mt-0.5 text-white">0</p>
+        </div>
+        <div class="w-px h-9" style="background:var(--slate-3);"></div>
+        <div class="text-center flex-1">
+          <p class="text-[10px] uppercase tracking-wider text-slate-500">Streak</p>
+          <p id="game-streak" class="text-[19px] font-bold font-mono-tab mt-0.5" style="color:var(--sage-light);">x0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arena Game -->
+    <div class="px-5 mt-4">
+      <div id="game-arena">
+
+        <!-- Instruction overlay -->
+        <div id="game-overlay" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center" style="background:rgba(15,17,23,0.92);">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--lilac)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
+            <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>
+          </svg>
+          <p class="text-[13px] font-semibold text-white">Regulasi Atensi Aktif</p>
+          <p class="text-[12px] text-slate-400 mt-2 leading-relaxed max-w-[260px]">
+            Ketuk target buah sehat secepat mungkin. Saat target vape muncul, jangan tekan kotaknya — tekan tombol BYPASS untuk melatih kontrol inhibisi otakmu.
+          </p>
+          <button onclick="startGameSession()" class="mt-5 text-[13px] font-semibold px-6 py-2.5 rounded-xl" style="background:var(--sage); color:#10130C;">
+            Mulai Sesi Defleksi
+          </button>
+        </div>
+
+        <!-- Session summary overlay -->
+        <div id="game-summary" class="absolute inset-0 flex-col items-center justify-center p-6 text-center hidden-screen" style="background:rgba(15,17,23,0.95);">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
+            <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
+          </svg>
+          <p class="text-[13px] font-semibold text-white">Sesi Selesai</p>
+          <p class="text-[12px] text-slate-400 mt-1">Performa kognitif tercatat ke profil Anda.</p>
+          <div class="grid grid-cols-2 gap-2.5 w-full max-w-[260px] mt-4">
+            <div class="card p-2.5">
+              <p class="text-[10px] text-slate-500 uppercase">Skor Sesi</p>
+              <p id="summary-score" class="text-[16px] font-bold text-white font-mono-tab mt-0.5">0</p>
+            </div>
+            <div class="card p-2.5">
+              <p class="text-[10px] text-slate-500 uppercase">Streak Terbaik</p>
+              <p id="summary-streak" class="text-[16px] font-bold font-mono-tab mt-0.5" style="color:var(--sage-light);">x0</p>
+            </div>
+          </div>
+          <button onclick="closeSummary()" class="mt-5 text-[13px] font-semibold px-6 py-2.5 rounded-xl" style="background:var(--slate-3); color:white;">
+            Kembali ke Dashboard
+          </button>
+        </div>
+
+      </div>
+
+      <button id="abort-session-btn" onclick="abortGameSession()" class="hidden-screen w-full mt-3 text-[12px] font-medium py-2.5 rounded-xl text-slate-400" style="background:var(--slate-2); border:1px solid var(--slate-3);">
+        Hentikan Sesi
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ======================= TAB 3: DETEKSI ZONA RAWAN (JITAI) ======================= -->
+  <section id="screen-profile" class="screen hidden-screen">
+
+    <header class="px-5 pt-6 pb-3">
+      <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">DETEKSI LOKASI REAL-TIME</p>
+      <h1 class="text-[20px] font-bold text-white mt-0.5">Zona Rawan</h1>
+      <p class="text-[12.5px] text-slate-400 mt-1 leading-relaxed">GPS pintar (JITAI) memantau sirkuit atensimu dari risiko geofencing ekologis.</p>
+    </header>
+
+    <div class="px-5 mt-2">
+      <div class="radar-wrap">
+        <div class="radar-ring r1"></div>
+        <div class="radar-ring r2"></div>
+        <div class="radar-ring r3"></div>
+        <div class="radar-pulse"></div>
+        <div class="radar-pulse delay2"></div>
+        <div class="radar-center"></div>
+        <div class="risk-dot"></div>
+        <div class="risk-tag">Coffee Shop<br><span class="opacity-70">High-Risk Zone</span></div>
+      </div>
+      <p class="text-center text-[12px] text-slate-400 mt-2">
+        <span class="text-[#E2574C] font-semibold">140m</span> dari lokasi Anda
+      </p>
+    </div>
+
+    <!-- JITAI Emergency Notification Box -->
+    <div id="jitai-card-wrap" class="px-5 mt-5">
+      <div id="jitai-card" class="jitai-card card p-4" style="border-color:rgba(226,87,76,0.35);">
+        <div class="flex items-start gap-3">
+          <div class="shrink-0 mt-0.5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.14A1 1 0 0 0 3 19.5h18a1 1 0 0 0 .87-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <p class="text-[12px] font-semibold tracking-wide" style="color:#F2B5AE;">SINYAL CRAVING TERDETEKSI</p>
+            <p class="text-[13px] text-slate-200 mt-1.5 leading-relaxed">
+              Wangi asap vape di sekitar tongkrongan mulai memicu otakmu? Jangan biarkan sirkuitmu dibajak. Mainkan Fruit Squish sekarang.
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-2.5 mt-4">
+          <button onclick="takeChallenge()" class="flex-1 text-[13px] font-semibold py-2.5 rounded-xl" style="background:var(--sage); color:#10130C;">
+            Ambil Tantangan
+          </button>
+          <button onclick="dismissChallenge()" class="flex-1 text-[13px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3);">
+            Nanti Saja
+          </button>
+        </div>
+      </div>
+
+      <div id="safe-banner" class="safe-banner card p-3.5 hidden-screen items-center gap-2.5 flex" style="border-color:rgba(138,154,106,0.3);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+          <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
+        </svg>
+        <p class="text-[12.5px] text-slate-300">Alert ditutup. Tetap waspada, sirkuit Anda aman.</p>
+      </div>
+    </div>
+
+    <!-- Quick mini stat strip -->
+    <div class="px-5 mt-6 grid grid-cols-2 gap-3">
+      <div class="card p-3.5">
+        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Poin Kognitif</p>
+        <p id="home-cp-mini" class="text-[18px] font-bold text-white mt-1 font-mono-tab">1,250 CP</p>
+      </div>
+      <div class="card p-3.5">
+        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Hari Bersih</p>
+        <p class="text-[18px] font-bold mt-1 font-mono-tab" style="color:var(--sage-light);">12 Hari</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ======================= BOTTOM NAVIGATION BAR ======================= -->
+  <nav id="bottom-nav">
+    <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H10v7H4a1 1 0 0 1-1-1Z"/>
+      </svg>
+      <span class="text-[10.5px] font-medium">Dashboard</span>
+    </button>
+    <button class="nav-btn" id="nav-game" onclick="switchTab('game')">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="11" rx="3"/><path d="M7 11v2M6 12h2M16 11.5h.01M18.5 13h.01"/>
+      </svg>
+      <span class="text-[10.5px] font-medium">ABM Game</span>
+    </button>
+    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
+      </svg>
+      <span class="text-[10.5px] font-medium">Zona Rawan</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+/* =====================================================
+   GLOBAL STATE
+===================================================== */
+const state = {
+  cognitivePoints: 1250,
+  cleanDays: 12,
+  pfcRecovery: 50,
+  currentTab: 'home',
+  selectedMood: null
 };
 
-/* ============================================================
-   STATIC DATA
-   ============================================================ */
-const CBT_TIPS = [
-  "Deep breathing for 60 seconds resets your craving cycle.",
-  "Cravings peak in 3-5 minutes, then fall — they don't escalate forever.",
-  "Drink cold water. The sensory shift interrupts the urge pathway.",
-  "Name the urge out loud: 'This is a craving, not an emergency.'",
-  "Urges are classically conditioned to routine — break the pattern, not your will.",
-  "Step outside for two minutes. A change in environment lowers cue strength.",
-  "Your prefrontal cortex regains control roughly 90 seconds after the urge spikes.",
-  "Delay, don't deny. Tell yourself 'not yet' instead of 'never'.",
-  "Clench and release your fists for 10 seconds — physical reset, mental reset.",
-  "Every bypassed craving weakens the neural loop a little more.",
-];
+/* =====================================================
+   TAB NAVIGATION ENGINE (FIXED MAP TO ID ALIGNMENT)
+===================================================== */
+function switchTab(tab){
+  document.getElementById('screen-home').classList.add('hidden-screen');
+  document.getElementById('screen-game').classList.add('hidden-screen');
+  document.getElementById('screen-profile').classList.add('hidden-screen');
+  document.getElementById('nav-home').classList.remove('active');
+  document.getElementById('nav-game').classList.remove('active');
+  document.getElementById('nav-profile').classList.remove('active');
 
-const RECOVERY_CHECKLIST = [
-  "Acknowledge the lapse without self-punishment — shame increases relapse risk.",
-  "Identify the trigger that preceded it (location, emotion, social cue).",
-  "Hydrate and reset breathing for 90 seconds before doing anything else.",
-  "Log the trigger in your pattern history for future geofencing accuracy.",
-  "Recommit to the next 24 hours only — not the whole streak at once.",
-];
-
-/* ============================================================
-   ROOT APP
-   ============================================================ */
-function App() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [cp, setCp] = useState(1240);
-  const [cpFlash, setCpFlash] = useState(false);
-  const [streak, setStreak] = useState(5);
-  const [recovery, setRecovery] = useState(68);
-  const [tipIndex, setTipIndex] = useState(0);
-  const [toast, setToast] = useState(null);
-
-  const addCp = useCallback((amount) => {
-    setCp(prev => prev + amount);
-    setCpFlash(true);
-    setTimeout(() => setCpFlash(false), 700);
-  }, []);
-
-  const showToast = useCallback((message, tone = "sage") => {
-    setToast({ message, tone, id: Date.now() });
-  }, []);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 3200);
-    return () => clearTimeout(t);
-  }, [toast]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTipIndex(prev => (prev + 1) % CBT_TIPS.length);
-    }, 9000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="min-h-screen flex flex-col" style={{ background: "var(--obsidian)" }}>
-      <Header cp={cp} cpFlash={cpFlash} />
-
-      <main className="flex-1 overflow-y-auto px-4 pt-4 pb-28 max-w-md w-full mx-auto">
-        {activeTab === "dashboard" && (
-          <Dashboard
-            streak={streak}
-            recovery={recovery}
-            tipIndex={tipIndex}
-            setTipIndex={setTipIndex}
-          />
-        )}
-        {activeTab === "protocol" && (
-          <Protocol addCp={addCp} showToast={showToast} />
-        )}
-        {activeTab === "monitor" && (
-          <Monitor addCp={addCp} showToast={showToast} />
-        )}
-      </main>
-
-      <Toast toast={toast} />
-      <BottomNav active={activeTab} setActive={setActiveTab} />
-    </div>
-  );
+  document.getElementById('screen-' + tab).classList.remove('hidden-screen');
+  document.getElementById('nav-' + tab).classList.add('active');
+  state.currentTab = tab;
 }
 
-/* ============================================================
-   HEADER
-   ============================================================ */
-function Header({ cp, cpFlash }) {
-  return (
-    <header className="sticky top-0 z-30 border-b" style={{ background: "rgba(15,17,23,0.92)", borderColor: "var(--hairline)", backdropFilter: "blur(6px)" }}>
-      <div className="max-w-md w-full mx-auto px-4 py-3.5 flex items-center justify-between">
-        <div className="flex items-baseline gap-2">
-          <span className="font-display font-700 text-[15px] tracking-[0.18em]" style={{ color: "var(--lilac)" }}>MIND</span>
-          <span className="font-display font-700 text-[15px] tracking-[0.18em]" style={{ color: "var(--sage)" }}>—SHIFT</span>
-        </div>
-        <div
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm border transition-colors duration-300"
-          style={{
-            borderColor: cpFlash ? "var(--sage)" : "var(--hairline)",
-            background: cpFlash ? "rgba(178,172,136,0.10)" : "var(--panel)"
-          }}
-        >
-          <Icon name="cp" size={14} className="shrink-0" style={{ color: "var(--sage)" }} />
-          <span className="font-mono tnum text-[13px] font-500" style={{ color: "var(--sage)" }}>
-            {cp.toLocaleString()}
-          </span>
-          <span className="font-mono text-[10px] tracking-wider" style={{ color: "var(--sage-dim)" }}>CP</span>
-        </div>
-      </div>
-    </header>
-  );
+/* =====================================================
+   TAB: JITAI ALERTS INTERACTION
+===================================================== */
+function takeChallenge(){
+  switchTab('game');
 }
 
-/* ============================================================
-   SECTION LABEL — bracket-style instrument-panel header
-   ============================================================ */
-function SectionLabel({ children }) {
-  return (
-    <div className="flex items-center gap-2 mb-3">
-      <span className="font-mono text-[11px] tracking-[0.22em]" style={{ color: "var(--sage-dim)" }}>
-        [ {children} ]
-      </span>
-      <div className="flex-1 h-px" style={{ background: "var(--hairline)" }} />
-    </div>
-  );
+function dismissChallenge(){
+  document.getElementById('jitai-card-wrap').querySelector('#jitai-card').classList.add('hidden-screen');
+  document.getElementById('safe-banner').classList.remove('hidden-screen');
 }
 
-/* ============================================================
-   DASHBOARD
-   ============================================================ */
-function Dashboard({ streak, recovery, tipIndex, setTipIndex }) {
-  return (
-    <div className="space-y-6 fade-up">
-      <div>
-        <p className="font-mono text-[11px] tracking-[0.2em]" style={{ color: "var(--lilac-dim)" }}>STATUS REPORT</p>
-        <h1 className="font-display text-[22px] font-600 mt-0.5" style={{ color: "var(--lilac)" }}>Neuropsychological Tracker</h1>
-      </div>
+/* =====================================================
+   TAB: ABM COGNITIVE DEFLECTION GAME ENGINE
+===================================================== */
+const GAME_DURATION = 180; 
+const SPAWN_INTERVAL_MS = 900;
+const TARGET_LIFETIME_MS = 2200;
 
-      {/* Streak Ledger */}
-      <div className="rounded-md border p-5" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-        <SectionLabel>VAPE-FREE STREAK LEDGER</SectionLabel>
-        <div className="flex items-end justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="font-display tnum text-[52px] leading-none font-700" style={{ color: "var(--sage)" }}>{streak}</span>
-            <span className="font-mono text-[13px] tracking-wide pb-1" style={{ color: "var(--lilac-dim)" }}>DAYS</span>
-          </div>
-          <Icon name="flame" size={30} style={{ color: "var(--sage)" }} />
-        </div>
-        <div className="flex gap-1.5 mt-4">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-1.5 flex-1 rounded-full"
-              style={{ background: i < streak ? "var(--sage)" : "var(--hairline)" }}
-            />
-          ))}
-        </div>
-        <p className="font-mono text-[10px] mt-2 tracking-wide" style={{ color: "var(--lilac-dim)" }}>
-          DAY 1 — DAY 7 ROLLING WINDOW
-        </p>
-      </div>
+let gameState = {
+  running: false,
+  timeLeft: GAME_DURATION,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  timerInterval: null,
+  spawnInterval: null,
+  activeTargets: [] 
+};
 
-      {/* Dopamine Recovery */}
-      <div className="rounded-md border p-5" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-        <SectionLabel>DOPAMINE RECEPTOR RECOVERY</SectionLabel>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Icon name="brain" size={18} style={{ color: "var(--sage)" }} />
-            <span className="text-[13px] font-500" style={{ color: "var(--lilac)" }}>Receptor sensitivity baseline</span>
-          </div>
-          <span className="font-mono tnum text-[15px] font-600" style={{ color: "var(--sage)" }}>{recovery}%</span>
-        </div>
-        <div className="h-2.5 w-full rounded-full overflow-hidden" style={{ background: "var(--hairline)" }}>
-          <div
-            className="h-full rounded-full bar-grow"
-            style={{ width: `${recovery}%`, background: "linear-gradient(90deg, var(--sage-dim), var(--sage))" }}
-          />
-        </div>
-        <p className="text-[11px] mt-3 leading-relaxed" style={{ color: "var(--lilac-dim)" }}>
-          Nicotinic receptor density normalizes gradually after cessation. Current trajectory estimates full baseline restoration within 6–8 weeks.
-        </p>
-      </div>
+let targetUid = 0;
 
-      {/* CBT Tips Engine */}
-      <div className="rounded-md border p-5" style={{ background: "var(--panel-raised)", borderColor: "var(--hairline)" }}>
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-mono text-[11px] tracking-[0.22em]" style={{ color: "var(--lilac-dim)" }}>[ CBT NUDGE ENGINE ]</span>
-          <button
-            onClick={() => setTipIndex((tipIndex + 1) % CBT_TIPS.length)}
-            className="focus-ring p-1.5 rounded-sm transition-opacity hover:opacity-70"
-            aria-label="Next CBT tip"
-            style={{ color: "var(--sage)" }}
-          >
-            <Icon name="spark" size={16} />
-          </button>
-        </div>
-        <p key={tipIndex} className="text-[15px] leading-relaxed font-500 fade-up" style={{ color: "var(--lilac)" }}>
-          {CBT_TIPS[tipIndex]}
-        </p>
-      </div>
-    </div>
-  );
+function formatTime(sec){
+  const m = Math.floor(sec / 60).toString().padStart(2,'0');
+  const s = (sec % 60).toString().padStart(2,'0');
+  return m + ':' + s;
 }
 
-/* ============================================================
-   PROTOCOL — ABM "TARGET SQUISH" GAME
-   ============================================================ */
-const GAME_DURATION = 30;
-const TARGET_LIFETIME = 1500;
-const comboMultiplier = (combo) => (combo >= 8 ? 3 : combo >= 4 ? 2 : 1);
+function startGameSession(){
+  document.getElementById('game-overlay').classList.add('hidden-screen');
+  document.getElementById('game-summary').classList.add('hidden-screen');
+  document.getElementById('abort-session-btn').classList.remove('hidden-screen');
 
-function Protocol({ addCp, showToast }) {
-  const [gameState, setGameState] = useState("idle"); // idle | running | over
-  const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
-  const [score, setScore] = useState(0);
-  const [combo, setCombo] = useState(0);
-  const [bestCombo, setBestCombo] = useState(0);
-  const [targets, setTargets] = useState([]);
-  const [earnedCp, setEarnedCp] = useState(0);
+  gameState.running = true;
+  gameState.timeLeft = GAME_DURATION;
+  gameState.score = 0;
+  gameState.streak = 0;
+  gameState.bestStreak = 0;
+  gameState.activeTargets = [];
 
-  const containerRef = useRef(null);
-  const spawnTimeoutRef = useRef(null);
-  const tickRef = useRef(null);
-  const comboDecayRef = useRef(null);
-  const targetIdRef = useRef(0);
+  updateGameHud();
 
-  const clearAllTimers = () => {
-    clearTimeout(spawnTimeoutRef.current);
-    clearInterval(tickRef.current);
-    clearTimeout(comboDecayRef.current);
-  };
-
-  useEffect(() => () => clearAllTimers(), []);
-
-  const spawnTarget = useCallback(() => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const size = 56;
-    const x = Math.random() * Math.max(rect.width - size, 10);
-    const y = Math.random() * Math.max(rect.height - size, 10);
-    const id = targetIdRef.current++;
-
-    setTargets(prev => [...prev, { id, x, y, dying: false }]);
-
-    const lifeTimer = setTimeout(() => {
-      setTargets(prev => prev.map(t => t.id === id ? { ...t, dying: true } : t));
-      setTimeout(() => {
-        setTargets(prev => prev.filter(t => t.id !== id));
-      }, 220);
-      // missed target -> reset combo
-      setCombo(0);
-    }, TARGET_LIFETIME);
-
-    return lifeTimer;
-  }, []);
-
-  useEffect(() => {
-    if (gameState !== "running") return;
-
-    let lifeTimers = [];
-    const scheduleSpawn = () => {
-      const delay = 450 + Math.random() * 500;
-      spawnTimeoutRef.current = setTimeout(() => {
-        const lt = spawnTarget();
-        lifeTimers.push(lt);
-        scheduleSpawn();
-      }, delay);
-    };
-    scheduleSpawn();
-
-    tickRef.current = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      clearTimeout(spawnTimeoutRef.current);
-      clearInterval(tickRef.current);
-      lifeTimers.forEach(clearTimeout);
-    };
-  }, [gameState, spawnTarget]);
-
-  useEffect(() => {
-    if (gameState === "running" && timeLeft === 0) {
-      const finalCp = score * 2;
-      setEarnedCp(finalCp);
-      setGameState("over");
-      setTargets([]);
-      addCp(finalCp);
-      showToast(`Craving bypassed. +${finalCp} CP secured.`, "sage");
+  gameState.timerInterval = setInterval(() => {
+    gameState.timeLeft--;
+    updateGameHud();
+    if(gameState.timeLeft <= 0){
+      endGameSession();
     }
-  }, [timeLeft, gameState, score, addCp, showToast]);
+  }, 1000);
 
-  const startGame = () => {
-    setScore(0);
-    setCombo(0);
-    setBestCombo(0);
-    setTimeLeft(GAME_DURATION);
-    setTargets([]);
-    setEarnedCp(0);
-    setGameState("running");
-  };
-
-  const handleSquish = (id) => {
-    setTargets(prev => prev.map(t => t.id === id ? { ...t, dying: true } : t));
-    setTimeout(() => {
-      setTargets(prev => prev.filter(t => t.id !== id));
-    }, 200);
-
-    setCombo(prevCombo => {
-      const nextCombo = prevCombo + 1;
-      setBestCombo(b => Math.max(b, nextCombo));
-      const multiplier = comboMultiplier(nextCombo);
-      setScore(prevScore => prevScore + multiplier);
-
-      clearTimeout(comboDecayRef.current);
-      comboDecayRef.current = setTimeout(() => setCombo(0), 2200);
-
-      return nextCombo;
-    });
-  };
-
-  const multiplier = comboMultiplier(combo);
-
-  return (
-    <div className="space-y-5 fade-up">
-      <div>
-        <p className="font-mono text-[11px] tracking-[0.2em]" style={{ color: "var(--lilac-dim)" }}>ABM PROTOCOL</p>
-        <h1 className="font-display text-[22px] font-600 mt-0.5" style={{ color: "var(--lilac)" }}>Attentional Bias Modification</h1>
-        <p className="text-[12.5px] mt-1.5 leading-relaxed" style={{ color: "var(--lilac-dim)" }}>
-          Engage this protocol the moment a craving spikes. Redirecting attentional focus for 30 seconds interrupts the urge-to-action pathway.
-        </p>
-      </div>
-
-      {gameState === "idle" && (
-        <div className="rounded-md border p-6 flex flex-col items-center text-center gap-4" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-          <Icon name="protocol" size={40} style={{ color: "var(--sage)" }} />
-          <div>
-            <h2 className="font-display text-[16px] font-600" style={{ color: "var(--lilac)" }}>Target Squish</h2>
-            <p className="text-[12.5px] mt-1" style={{ color: "var(--lilac-dim)" }}>30-second reflex protocol. Squish targets before they decay. Build combos for higher CP multipliers.</p>
-          </div>
-          <button
-            onClick={startGame}
-            className="focus-ring w-full py-3 rounded-sm font-display font-600 text-[13px] tracking-[0.1em] transition-transform active:scale-[0.98]"
-            style={{ background: "var(--sage)", color: "var(--obsidian)" }}
-          >
-            BEGIN PROTOCOL
-          </button>
-        </div>
-      )}
-
-      {gameState === "running" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Icon name="timer" size={16} style={{ color: "var(--sage)" }} />
-              <span className="font-mono tnum text-[18px] font-600" style={{ color: timeLeft <= 5 ? "var(--risk)" : "var(--lilac)" }}>
-                00:{String(timeLeft).padStart(2, "0")}
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="font-mono text-[9px] tracking-wider" style={{ color: "var(--lilac-dim)" }}>SCORE</p>
-                <p className="font-mono tnum text-[16px] font-600" style={{ color: "var(--sage)" }}>{score}</p>
-              </div>
-              <div className="text-right min-w-[44px]">
-                <p className="font-mono text-[9px] tracking-wider" style={{ color: "var(--lilac-dim)" }}>COMBO</p>
-                <p className="font-mono tnum text-[16px] font-600" style={{ color: combo > 0 ? "var(--lilac)" : "var(--lilac-dim)" }}>
-                  x{multiplier}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="h-1 w-full rounded-full overflow-hidden" style={{ background: "var(--hairline)" }}>
-            <div
-              className="h-full transition-all duration-1000 ease-linear"
-              style={{ width: `${(timeLeft / GAME_DURATION) * 100}%`, background: "var(--sage)" }}
-            />
-          </div>
-
-          <div
-            ref={containerRef}
-            className="relative w-full rounded-md border overflow-hidden select-none"
-            style={{ height: "360px", background: "var(--panel)", borderColor: "var(--hairline)", touchAction: "manipulation" }}
-          >
-            <div className="absolute inset-0 grain-overlay opacity-40" />
-            {targets.map(t => (
-              <button
-                key={t.id}
-                onClick={() => handleSquish(t.id)}
-                aria-label="Target"
-                className={`focus-ring absolute rounded-md ${t.dying ? "target-squish" : "target-spawn"}`}
-                style={{
-                  left: t.x, top: t.y, width: 56, height: 56,
-                  color: "var(--sage)",
-                  filter: "drop-shadow(0 0 6px rgba(178,172,136,0.35))"
-                }}
-              >
-                <Icon name="target-hex" />
-              </button>
-            ))}
-            {targets.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-mono text-[11px] tracking-widest" style={{ color: "var(--lilac-dim)" }}>SCANNING...</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {gameState === "over" && (
-        <div className="rounded-md border p-6 flex flex-col items-center text-center gap-4 fade-up" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-          <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(178,172,136,0.12)" }}>
-            <Icon name="check" size={26} style={{ color: "var(--sage)" }} />
-          </div>
-          <div>
-            <h2 className="font-display text-[17px] font-600" style={{ color: "var(--lilac)" }}>Craving Successfully Bypassed</h2>
-            <p className="text-[12.5px] mt-1.5 leading-relaxed" style={{ color: "var(--lilac-dim)" }}>
-              Attentional redirection complete. The urge window has closed without action taken.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 w-full">
-            <Stat label="SCORE" value={score} />
-            <Stat label="BEST COMBO" value={`x${comboMultiplier(bestCombo)}`} />
-            <Stat label="CP EARNED" value={`+${earnedCp}`} accent />
-          </div>
-
-          <button
-            onClick={startGame}
-            className="focus-ring w-full py-3 rounded-sm font-display font-600 text-[13px] tracking-[0.1em] border transition-colors"
-            style={{ borderColor: "var(--sage)", color: "var(--sage)" }}
-          >
-            RUN AGAIN
-          </button>
-        </div>
-      )}
-    </div>
-  );
+  gameState.spawnInterval = setInterval(spawnTarget, SPAWN_INTERVAL_MS);
 }
 
-function Stat({ label, value, accent }) {
-  return (
-    <div className="rounded-sm border py-3 px-2" style={{ background: "var(--panel-raised)", borderColor: "var(--hairline)" }}>
-      <p className="font-mono text-[9px] tracking-wider" style={{ color: "var(--lilac-dim)" }}>{label}</p>
-      <p className="font-mono tnum text-[16px] font-600 mt-1" style={{ color: accent ? "var(--sage)" : "var(--lilac)" }}>{value}</p>
-    </div>
-  );
+function updateGameHud(){
+  document.getElementById('game-timer').textContent = formatTime(Math.max(0,gameState.timeLeft));
+  document.getElementById('game-score').textContent = gameState.score;
+  document.getElementById('game-streak').textContent = 'x' + gameState.streak;
 }
 
-/* ============================================================
-   MONITOR — JITAI GEOFENCING SIMULATION
-   ============================================================ */
-function Monitor({ addCp, showToast }) {
-  const [decision, setDecision] = useState(null); // null | "survived" | "relapsed"
-  const [checklist, setChecklist] = useState(RECOVERY_CHECKLIST.map(() => false));
+function spawnTarget(){
+  if(!gameState.running) return;
+  const arena = document.getElementById('game-arena');
+  const arenaRect = arena.getBoundingClientRect();
 
-  const handleSurvive = () => {
-    setDecision("survived");
-    addCp(50);
-    showToast("Locus of control reinforced. +50 CP secured.", "sage");
-  };
+  const margin = 15;
+  const targetW = 80; 
+  const targetH = 80;
+  const maxX = Math.max(margin, arenaRect.width - targetW - margin);
+  const maxY = Math.max(margin, arenaRect.height - targetH - margin);
+  const x = margin + Math.random() * (maxX - margin);
+  const y = margin + Math.random() * (maxY - margin);
 
-  const handleRelapse = () => {
-    setDecision("relapsed");
-    setChecklist(RECOVERY_CHECKLIST.map(() => false));
-  };
+  const isVape = Math.random() < 0.38; 
+  const uid = 'tgt-' + (targetUid++);
 
-  const toggleChecklist = (i) => {
-    setChecklist(prev => prev.map((v, idx) => idx === i ? !v : v));
-  };
+  const el = document.createElement('div');
+  el.className = 'target';
+  el.id = uid;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
 
-  const reset = () => setDecision(null);
-
-  return (
-    <div className="space-y-5 fade-up">
-      <div>
-        <p className="font-mono text-[11px] tracking-[0.2em]" style={{ color: "var(--lilac-dim)" }}>JITAI ALERT</p>
-        <h1 className="font-display text-[22px] font-600 mt-0.5" style={{ color: "var(--lilac)" }}>Geofencing Monitor</h1>
-      </div>
-
-      {/* Radar */}
-      <div className="rounded-md border p-5" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-        <SectionLabel>PROXIMITY SCAN</SectionLabel>
-
-        <div className="relative w-full aspect-square max-w-[260px] mx-auto">
-          <svg viewBox="0 0 200 200" className="w-full h-full">
-            <defs>
-              <radialGradient id="radarFade" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--sage)" stopOpacity="0.22" />
-                <stop offset="100%" stopColor="var(--sage)" stopOpacity="0" />
-              </radialGradient>
-            </defs>
-            {[90, 65, 40, 15].map(r => (
-              <circle key={r} cx="100" cy="100" r={r} fill="none" stroke="var(--hairline)" strokeWidth="1" />
-            ))}
-            <line x1="10" y1="100" x2="190" y2="100" stroke="var(--hairline)" strokeWidth="1" />
-            <line x1="100" y1="10" x2="100" y2="190" stroke="var(--hairline)" strokeWidth="1" />
-
-            <g className="radar-sweep" style={{ transformOrigin: "100px 100px" }}>
-              <path d="M100,100 L100,10 A90,90 0 0,1 163.6,36.4 Z" fill="url(#radarFade)" />
-            </g>
-
-            {/* center = user */}
-            <circle cx="100" cy="100" r="3.5" fill="var(--lilac)" />
-            <circle cx="100" cy="100" r="7" fill="none" stroke="var(--lilac)" strokeWidth="1" opacity="0.5" />
-
-            {/* risk blip */}
-            <circle cx="142" cy="64" r="4" fill="var(--risk)" className="blip-pulse" />
+  if(!isVape){
+    const fruits = ['🍎', '🍓', '🍊', '🍇'];
+    const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
+    
+    el.innerHTML = `
+      <button onclick="hitHealthyTarget('${uid}')"
+        class="flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-transform active:scale-95"
+        style="background:rgba(138,154,106,0.15); border:1.5px solid var(--sage); box-shadow: 0 4px 12px rgba(138,154,106,0.15);">
+        <span class="text-2xl">${randomFruit}</span>
+        <span class="text-[8px] font-bold tracking-wider mt-0.5" style="color:var(--sage-light);">HIT</span>
+      </button>`;
+  } else {
+    el.innerHTML = `
+      <div class="flex flex-col items-center gap-1">
+        <div class="w-14 h-14 flex items-center justify-center rounded-2xl" style="background:rgba(226,87,76,0.12); border:1.5px solid rgba(226,87,76,0.55);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="10" width="14" height="6" rx="2"/>
+            <path d="M17 12h2.5a1.5 1.5 0 0 1 0 3H17"/>
+            <path d="M6 10V8a2 2 0 0 1 2-2h1"/>
           </svg>
-
-          <div className="absolute" style={{ left: "73%", top: "26%", transform: "translate(-50%, -120%)" }}>
-            <div className="flex items-center gap-1 px-2 py-1 rounded-sm border whitespace-nowrap" style={{ background: "var(--panel-raised)", borderColor: "var(--risk-dim)" }}>
-              <Icon name="pin" size={11} style={{ color: "var(--risk)" }} />
-              <span className="font-mono text-[9px] tracking-wide" style={{ color: "var(--risk)" }}>VAPE STORE</span>
-            </div>
-          </div>
         </div>
+        <button onclick="hitBypassButton('${uid}')"
+          class="text-[9px] font-extrabold px-3 py-1 rounded-md tracking-wider shadow-md transition-transform active:scale-95"
+          style="background:var(--lilac); color:#1A1D27;">
+          BYPASS
+        </button>
+      </div>`;
+    
+    el.addEventListener('click', function(e){
+      if(e.target.tagName.toLowerCase() !== 'button'){
+        missVapeTarget(uid);
+      }
+    });
+  }
 
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <Icon name="alert" size={15} style={{ color: "var(--risk)" }} />
-          <p className="font-mono text-[12px] tracking-wide" style={{ color: "var(--lilac)" }}>
-            HIGH-RISK ZONE DETECTED — <span style={{ color: "var(--risk)" }}>120m</span>
-          </p>
-        </div>
-      </div>
+  arena.appendChild(el);
 
-      {decision === null && (
-        <div className="rounded-md border p-5 space-y-4" style={{ background: "var(--panel-raised)", borderColor: "var(--hairline)" }}>
-          <SectionLabel>DECISION NODE</SectionLabel>
-          <p className="text-[13px] leading-relaxed" style={{ color: "var(--lilac)" }}>
-            You are approaching a known trigger location. The next ninety seconds determine the outcome — choose deliberately.
-          </p>
+  const timeoutHandle = setTimeout(() => {
+    expireTarget(uid, isVape);
+  }, TARGET_LIFETIME_MS);
 
-          <button
-            onClick={handleSurvive}
-            className="focus-ring w-full flex items-center justify-center gap-2 py-3 rounded-sm font-display font-600 text-[13px] tracking-[0.08em] transition-transform active:scale-[0.98]"
-            style={{ background: "var(--sage)", color: "var(--obsidian)" }}
-          >
-            <Icon name="shield" size={16} />
-            TURN AROUND AND SURVIVE
-          </button>
-
-          <button
-            onClick={handleRelapse}
-            className="focus-ring w-full flex items-center justify-center gap-2 py-3 rounded-sm font-display font-600 text-[13px] tracking-[0.08em] border transition-colors"
-            style={{ borderColor: "var(--hairline)", color: "var(--lilac-dim)" }}
-          >
-            <Icon name="rotate" size={16} />
-            I RELAPSED
-          </button>
-        </div>
-      )}
-
-      {decision === "survived" && (
-        <div className="rounded-md border p-6 flex flex-col items-center text-center gap-4 fade-up" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-          <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "rgba(178,172,136,0.12)" }}>
-            <Icon name="shield" size={26} style={{ color: "var(--sage)" }} />
-          </div>
-          <div>
-            <h2 className="font-display text-[17px] font-600" style={{ color: "var(--lilac)" }}>Control Reinforced</h2>
-            <p className="text-[12.5px] mt-1.5 leading-relaxed" style={{ color: "var(--lilac-dim)" }}>
-              You exercised agency over the environment instead of letting it dictate behavior. That decision compounds — locus of control strengthens with every repetition.
-            </p>
-          </div>
-          <div className="px-4 py-2 rounded-sm border" style={{ borderColor: "var(--sage)", background: "rgba(178,172,136,0.08)" }}>
-            <span className="font-mono tnum text-[14px] font-600" style={{ color: "var(--sage)" }}>+50 CP</span>
-          </div>
-          <button onClick={reset} className="focus-ring text-[12px] font-mono tracking-wide underline" style={{ color: "var(--lilac-dim)" }}>
-            RETURN TO MONITOR
-          </button>
-        </div>
-      )}
-
-      {decision === "relapsed" && (
-        <div className="rounded-md border p-5 space-y-4 fade-up" style={{ background: "var(--panel)", borderColor: "var(--hairline)" }}>
-          <div className="flex items-center gap-2">
-            <Icon name="list" size={16} style={{ color: "var(--lilac)" }} />
-            <h2 className="font-display text-[15px] font-600" style={{ color: "var(--lilac)" }}>Recovery Protocol</h2>
-          </div>
-          <p className="text-[12.5px] leading-relaxed" style={{ color: "var(--lilac-dim)" }}>
-            A single lapse does not erase the progress already made. Work through this checklist to re-stabilize before continuing.
-          </p>
-
-          <div className="space-y-2">
-            {RECOVERY_CHECKLIST.map((item, i) => (
-              <button
-                key={i}
-                onClick={() => toggleChecklist(i)}
-                className="focus-ring w-full flex items-start gap-3 p-3 rounded-sm border text-left transition-colors"
-                style={{
-                  borderColor: checklist[i] ? "var(--sage-dim)" : "var(--hairline)",
-                  background: checklist[i] ? "rgba(178,172,136,0.07)" : "var(--panel-raised)"
-                }}
-              >
-                <span
-                  className="mt-0.5 w-4 h-4 rounded-sm border flex items-center justify-center shrink-0"
-                  style={{ borderColor: checklist[i] ? "var(--sage)" : "var(--hairline)" }}
-                >
-                  {checklist[i] && <Icon name="check" size={11} style={{ color: "var(--sage)" }} />}
-                </span>
-                <span className="text-[12.5px] leading-snug" style={{ color: checklist[i] ? "var(--lilac-dim)" : "var(--lilac)" }}>
-                  {item}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <button
-            onClick={reset}
-            className="focus-ring w-full py-3 rounded-sm font-display font-600 text-[13px] tracking-[0.08em] border transition-colors"
-            style={{ borderColor: "var(--sage)", color: "var(--sage)" }}
-          >
-            RESUME MONITORING
-          </button>
-        </div>
-      )}
-    </div>
-  );
+  gameState.activeTargets.push({ id: uid, type: isVape ? 'vape' : 'healthy', timeoutHandle });
 }
 
-/* ============================================================
-   TOAST
-   ============================================================ */
-function Toast({ toast }) {
-  if (!toast) return null;
-  return (
-    <div key={toast.id} className="fixed bottom-24 left-0 w-full px-4 z-40 fade-up pointer-events-none">
-      <div
-        className="max-w-md mx-auto flex items-center gap-2 px-4 py-3 rounded-sm border shadow-lg"
-        style={{ background: "var(--panel-raised)", borderColor: "var(--sage-dim)" }}
-      >
-        <Icon name="trend" size={15} style={{ color: "var(--sage)" }} />
-        <span className="text-[12.5px] font-500" style={{ color: "var(--lilac)" }}>{toast.message}</span>
-      </div>
-    </div>
-  );
+function removeTargetFromState(uid){
+  const idx = gameState.activeTargets.findIndex(t => t.id === uid);
+  if(idx !== -1){
+    clearTimeout(gameState.activeTargets[idx].timeoutHandle);
+    gameState.activeTargets.splice(idx, 1);
+  }
 }
 
-/* ============================================================
-   BOTTOM NAV
-   ============================================================ */
-function BottomNav({ active, setActive }) {
-  const items = [
-    { id: "dashboard", label: "Dashboard", icon: "dashboard" },
-    { id: "protocol", label: "Protocol", icon: "protocol" },
-    { id: "monitor", label: "Monitor", icon: "monitor" },
-  ];
-
-  return (
-    <nav
-      className="fixed bottom-0 left-0 w-full border-t z-30"
-      style={{ background: "rgba(15,17,23,0.96)", borderColor: "var(--hairline)", backdropFilter: "blur(6px)" }}
-    >
-      <div className="max-w-md mx-auto flex">
-        {items.map(item => {
-          const isActive = active === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setActive(item.id)}
-              className="focus-ring flex-1 flex flex-col items-center gap-1 py-3 transition-colors"
-              aria-current={isActive}
-            >
-              <Icon
-                name={item.icon}
-                size={20}
-                style={{ color: isActive ? "var(--sage)" : "var(--lilac-dim)" }}
-              />
-              <span
-                className="font-mono text-[10px] tracking-wide"
-                style={{ color: isActive ? "var(--sage)" : "var(--lilac-dim)" }}
-              >
-                {item.label.toUpperCase()}
-              </span>
-              <div
-                className="absolute -top-px h-[2px] w-8 rounded-full transition-opacity"
-                style={{ background: "var(--sage)", opacity: isActive ? 1 : 0 }}
-              />
-            </button>
-          );
-        })}
-      </div>
-    </nav>
-  );
+function removeTargetEl(uid){
+  const el = document.getElementById(uid);
+  if(el){
+    el.classList.add('expiring');
+    setTimeout(() => el.remove(), 260);
+  }
 }
 
-/* ============================================================
-   MOUNT
-   ============================================================ */
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+function spawnFloatScore(uid, text, color){
+  const el = document.getElementById(uid);
+  if(!el) return;
+  const float = document.createElement('div');
+  float.className = 'float-score';
+  float.style.color = color;
+  float.style.left = el.style.left;
+  float.style.top = el.style.top;
+  float.textContent = text;
+  document.getElementById('game-arena').appendChild(float);
+  setTimeout(() => float.remove(), 900);
+}
+
+function hitHealthyTarget(uid){
+  if(!gameState.running) return;
+  removeTargetFromState(uid);
+  gameState.score += 10;
+  gameState.streak += 1;
+  gameState.bestStreak = Math.max(gameState.bestStreak, gameState.streak);
+  spawnFloatScore(uid, '+10', '#B2AC88');
+  removeTargetEl(uid);
+  updateGameHud();
+}
+
+function hitBypassButton(uid){
+  if(!gameState.running) return;
+  removeTargetFromState(uid);
+  gameState.score += 5;
+  gameState.streak += 1;
+  gameState.bestStreak = Math.max(gameState.bestStreak, gameState.streak);
+  spawnFloatScore(uid, '+5 Bypass', '#E6E6FA');
+  removeTargetEl(uid);
+  updateGameHud();
+}
+
+function missVapeTarget(uid){
+  if(!gameState.running) return;
+  removeTargetFromState(uid);
+  gameState.streak = 0;
+  spawnFloatScore(uid, 'Salah!', '#E2574C');
+  removeTargetEl(uid);
+  updateGameHud();
+}
+
+function expireTarget(uid, wasVape){
+  if(!gameState.running) return;
+  removeTargetFromState(uid);
+  if(!wasVape){
+    gameState.streak = 0;
+    updateGameHud();
+  }
+  removeTargetEl(uid);
+}
+
+function clearAllTargets(){
+  gameState.activeTargets.forEach(t => clearTimeout(t.timeoutHandle));
+  gameState.activeTargets = [];
+  document.getElementById('game-arena').querySelectorAll('.target, .float-score').forEach(el => el.remove());
+}
+
+function endGameSession(){
+  gameState.running = false;
+  clearInterval(gameState.timerInterval);
+  clearInterval(gameState.spawnInterval);
+  clearAllTargets();
+
+  state.cognitivePoints += gameState.score;
+  refreshDashboardNumbers();
+
+  state.pfcRecovery = Math.min(100, state.pfcRecovery + 2);
+  document.getElementById('pfc-bar-fill').style.width = state.pfcRecovery + '%';
+  document.getElementById('pfc-percent').textContent = state.pfcRecovery + '%';
+
+  document.getElementById('last-session-log').textContent =
+    `Sesi terbaru: skor ${gameState.score}, streak terbaik x${gameState.bestStreak}. +${gameState.score} CP ditambahkan.`;
+
+  document.getElementById('summary-score').textContent = gameState.score;
+  document.getElementById('summary-streak').textContent = 'x' + gameState.bestStreak;
+
+  document.getElementById('abort-session-btn').classList.add('hidden-screen');
+  const summary = document.getElementById('game-summary');
+  summary.classList.remove('hidden-screen');
+  summary.classList.add('flex');
+}
+
+function abortGameSession(){
+  if(!gameState.running) return;
+  endGameSession();
+}
+
+function closeSummary(){
+  document.getElementById('game-summary').classList.add('hidden-screen');
+  document.getElementById('game-summary').classList.remove('flex');
+  document.getElementById('game-overlay').classList.remove('hidden-screen');
+  switchTab('home'); // Menuju Dashboard Utama secara presisi
+}
+
+/* =====================================================
+   TAB: REWARD DASHBOARD LOGIC
+===================================================== */
+function refreshDashboardNumbers(){
+  document.getElementById('dash-cp').textContent = state.cognitivePoints.toLocaleString('id-ID');
+  document.getElementById('home-cp-mini').textContent = state.cognitivePoints.toLocaleString('id-ID') + ' CP';
+}
+
+const moodFeedback = {
+  belum: "Tidak masalah jika belum siap sekarang. Identifikasi satu pemicu terkecil hari ini, itu sudah langkah maju.",
+  ragu: "Keraguan adalah bagian normal dari proses pemulihan. Coba sesi defleksi singkat untuk menstabilkan fokus Anda.",
+  siap: "Energi yang bagus untuk dimanfaatkan. Gunakan momentum ini untuk menyelesaikan satu sesi latihan inhibisi sekarang.",
+  detoks: "Fase detoks bisa terasa berat secara fisik maupun mental. Pastikan hidrasi cukup dan istirahat teratur selama proses ini."
+};
+
+function selectMood(btn, key){
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.selectedMood = key;
+
+  const feedbackEl = document.getElementById('mood-feedback');
+  feedbackEl.textContent = moodFeedback[key];
+  feedbackEl.classList.remove('hidden-screen');
+}
+
+/* =====================================================
+   INITIALIZATION
+===================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+  refreshDashboardNumbers();
+});
 </script>
+
 </body>
 </html>
