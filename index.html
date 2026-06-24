@@ -5,716 +5,561 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>MIND-SHIFT | Digital First-Aid Kit</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --obsidian:#0F1117;
-    --slate-1:#1A1D27;
-    --slate-2:#22263A;
-    --slate-3:#2C3150;
-    --sage:#8A9A6A;
-    --sage-light:#B2AC88;
-    --lilac:#E6E6FA;
-    --danger:#E2574C;
+  :root {
+    --base-bg: #1C1C21;
+    --card-bg: #27272D;
+    --border-color: #383842;
+    --sage: #9AB08A;
   }
-  *{ -webkit-tap-highlight-color: transparent; }
-  html,body{
-    background:var(--obsidian);
-    font-family:'Inter',sans-serif;
-    overscroll-behavior:none;
-  }
-  .font-mono-tab{ font-family:'Roboto Mono',monospace; font-variant-numeric: tabular-nums; }
-  #app-shell{
-    max-width:390px;
-    margin:0 auto;
-    min-height:100vh;
-    background:var(--obsidian);
-    position:relative;
-    overflow:hidden;
-    box-shadow:0 0 60px rgba(0,0,0,0.6);
-  }
-  .screen{ display:flex; flex-direction:column; min-height:100vh; padding-bottom:96px; }
-  .hidden-screen{ display:none !important; }
+  * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  body { background: #1C1C21; font-family: 'Inter', sans-serif; color: white; overscroll-behavior: none; padding-bottom: 80px; }
+  .font-mono-tab { font-family: 'Roboto Mono', monospace; font-variant-numeric: tabular-nums; }
+  
+  #app-shell { max-width: 390px; margin: 0 auto; min-height: 100vh; background: #1C1C21; position: relative; overflow-x: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+  .screen { display: flex; flex-direction: column; min-height: 100vh; padding: 20px; padding-bottom: 100px; }
+  .hidden-screen { display: none !important; }
+  .card { background: #27272D; border: 1px solid #383842; border-radius: 16px; }
+  
+  /* Inputs */
+  input[type=range] { accent-color: #9AB08A; }
+  .custom-input { background: #16161A; border: 1px solid #4A4A5A; color: white; border-radius: 12px; padding: 10px; width: 100%; font-size: 13px; outline: none; transition: border 0.3s; }
+  .custom-input:focus { border-color: #9AB08A; }
 
-  /* ---- Radar (JITAI Simulation) ---- */
-  .radar-wrap{
-    position:relative; width:280px; height:280px; margin:0 auto;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .radar-ring{
-    position:absolute; border-radius:50%;
-    border:1px solid rgba(138,154,106,0.25);
-  }
-  .radar-ring.r1{ width:100%; height:100%; }
-  .radar-ring.r2{ width:72%; height:72%; }
-  .radar-ring.r3{ width:44%; height:44%; }
-  .radar-pulse{
-    position:absolute; width:100%; height:100%; border-radius:50%;
-    border:1px solid var(--sage);
-    animation: pulseOut 2.6s cubic-bezier(.2,.6,.4,1) infinite;
-    opacity:0;
-  }
-  .radar-pulse.delay2{ animation-delay:1.3s; }
-  @keyframes pulseOut{
-    0%{ transform:scale(0.3); opacity:0.7; }
-    100%{ transform:scale(1.05); opacity:0; }
-  }
-  .radar-center{
-    width:14px; height:14px; border-radius:50%;
-    background:var(--sage); box-shadow:0 0 14px 2px rgba(138,154,106,0.7);
-    z-index:10;
-  }
-  .risk-dot{
-    position:absolute; top:28%; left:68%;
-    width:11px; height:11px; border-radius:50%;
-    background:var(--danger);
-    box-shadow:0 0 0 0 rgba(226,87,76,0.6);
-    animation: riskBlink 1.6s ease-in-out infinite;
-    z-index:11;
-  }
-  @keyframes riskBlink{
-    0%,100%{ box-shadow:0 0 0 0 rgba(226,87,76,0.55); }
-    50%{ box-shadow:0 0 0 8px rgba(226,87,76,0); }
-  }
-  .risk-tag{
-    position:absolute; top:33%; left:74%;
-    white-space:nowrap; font-size:10px; line-height:1.3;
-    color:#F2B5AE; background:rgba(226,87,76,0.12);
-    border:1px solid rgba(226,87,76,0.35);
-    padding:3px 7px; border-radius:6px;
-  }
+  /* Flip Card */
+  .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
+  .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+  .flip-card-front, .flip-card-back { backface-visibility: hidden; }
+  .flip-card-back { transform: rotateY(180deg); }
 
-  /* ---- Emergency Card Slide-in ---- */
-  .jitai-card{ animation: cardRise 0.45s cubic-bezier(.16,.8,.3,1) both; }
-  @keyframes cardRise{
-    from{ opacity:0; transform:translateY(18px) scale(0.98); }
-    to{ opacity:1; transform:translateY(0) scale(1); }
-  }
-  .safe-banner{ animation: fadeSlide 0.4s ease both; }
-  @keyframes fadeSlide{
-    from{ opacity:0; transform:translateY(-6px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
+  /* Radar Animation Realistik */
+  .radar-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; background: radial-gradient(circle, rgba(154,176,138,0.05) 0%, rgba(28,28,33,0) 70%);}
+  .radar-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(154,176,138,0.3); }
+  .radar-ring.r1 { width: 100%; height: 100%; }
+  .radar-ring.r2 { width: 66%; height: 66%; }
+  .radar-ring.r3 { width: 33%; height: 33%; }
+  .radar-sweep { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, transparent 70%, rgba(154,176,138,0.6) 100%); animation: spin 2.5s linear infinite; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .radar-center { width: 14px; height: 14px; border-radius: 50%; background: #9AB08A; box-shadow: 0 0 15px 3px rgba(154,176,138,0.8); z-index: 10; }
+  .risk-dot { position: absolute; top: 30%; left: 70%; width: 12px; height: 12px; border-radius: 50%; background: #E2726E; animation: pulseDot 1s infinite alternate; z-index: 11; }
+  @keyframes pulseDot { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(226,114,110,0.7); } 100% { transform: scale(1.3); box-shadow: 0 0 10px 5px rgba(226,114,110,0); } }
 
-  /* ---- ABM Game Arena ---- */
-  #game-arena{
-    position:relative; width:100%; height:380px;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(138,154,106,0.05), transparent 40%),
-      radial-gradient(circle at 80% 80%, rgba(226,87,76,0.04), transparent 40%),
-      var(--slate-1);
-    border:1px solid var(--slate-3);
-    border-radius:18px;
-    overflow:hidden;
-  }
-  .target{
-    position:absolute;
-    animation: targetIn 0.22s ease both;
-    user-select:none;
-  }
-  @keyframes targetIn{
-    from{ opacity:0; transform:scale(0.7); }
-    to{ opacity:1; transform:scale(1); }
-  }
-  .target.expiring{ animation: targetOut 0.25s ease forwards; }
-  @keyframes targetOut{
-    from{ opacity:1; transform:scale(1); }
-    to{ opacity:0; transform:scale(0.75); }
-  }
-  .float-score{
-    position:absolute; font-weight:700; font-size:14px;
-    pointer-events:none;
-    animation: floatUp 0.9s ease-out forwards;
-    z-index:30;
-  }
-  @keyframes floatUp{
-    0%{ opacity:1; transform:translateY(0); }
-    100%{ opacity:0; transform:translateY(-38px); }
-  }
+  /* Game Area & Floating Score */
+  #game-arena { position: relative; width: 100%; height: 380px; background: #222228; border: 1px solid #383842; border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
+  .target { position: absolute; animation: targetIn 0.2s ease both; user-select: none; }
+  @keyframes targetIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+  .shake-anim { animation: shake 0.2s ease-in-out 2; border-color: #E2726E !important; background: rgba(226,114,110,0.1) !important; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  
+  .floating-score { position: absolute; font-weight: 800; font-size: 18px; pointer-events: none; animation: floatUp 0.8s ease-out forwards; z-index: 30; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.2); } }
 
-  /* ---- PFC Recovery Bar ---- */
-  .pfc-bar-bg{ background:var(--slate-3); border-radius:999px; height:10px; overflow:hidden; }
-  .pfc-bar-fill{
-    height:100%; border-radius:999px;
-    background:linear-gradient(90deg, #6B7A52, var(--sage), var(--sage-light));
-    transition: width 0.6s ease;
-  }
+  /* Bottom Navigation */
+  #bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; height: 72px; background: rgba(28,28,33,0.95); backdrop-filter: blur(10px); border-top: 1px solid #383842; display: flex; justify-content: space-around; align-items: center; z-index: 50; }
+  .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #71717A; font-size: 10px; font-weight: 600; transition: color 0.3s; }
+  .nav-btn svg { stroke: #71717A; transition: 0.3s; }
+  .nav-btn.active { color: #9AB08A; }
+  .nav-btn.active svg { stroke: #9AB08A; filter: drop-shadow(0 0 6px rgba(154,176,138,0.6)); }
 
-  /* ---- Mood TTM Buttons ---- */
-  .mood-btn{ transition: all 0.2s ease; }
-  .mood-btn.active{
-    background:var(--sage) !important;
-    color:#10130C !important;
-    border-color:var(--sage) !important;
-  }
-
-  /* ---- Bottom Navigation ---- */
-  #bottom-nav{
-    position:absolute; bottom:0; left:0; right:0;
-    height:64px;
-    background:rgba(15,17,23,0.78);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-top:1px solid rgba(255,255,255,0.06);
-    display:flex; align-items:center; justify-content:space-around;
-    max-width:390px; margin:0 auto;
-    z-index:50;
-  }
-  .nav-btn{ display:flex; flex-direction:column; align-items:center; gap:4px; color:#6B7280; transition: color 0.2s ease; }
-  .nav-btn.active{ color:var(--sage); }
-  .nav-btn svg{ stroke:#6B7280; transition: stroke 0.2s ease; }
-  .nav-btn.active svg{ stroke:var(--sage); filter:drop-shadow(0 0 6px rgba(138,154,106,0.5)); }
-
-  .card{ background:var(--slate-2); border:1px solid var(--slate-3); border-radius:18px; }
-  .scrollbar-none::-webkit-scrollbar{ display:none; }
+  /* Toasts */
+  .toast { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
 
 <div id="app-shell">
 
-  <!-- ======================= TAB 1: DASHBOARD / REWARD ======================= -->
-  <section id="screen-home" class="screen">
+  <!-- TOAST NOTIFICATION UMUM -->
+  <div id="general-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-[#9AB08A] text-[#1C1C21] font-bold px-4 py-3 rounded-xl shadow-xl z-[100] hidden-screen toast border border-[#B8C7AD] text-xs flex items-center gap-2">
+    <span>✅</span> <span id="toast-msg">Notifikasi sukses!</span>
+  </div>
 
-    <header class="px-5 pt-6 pb-3">
-      <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">PROFIL PEMULIHAN</p>
-      <h1 class="text-[20px] font-bold text-white mt-0.5">Dashboard</h1>
+  <!-- ======================= TAB 1: BERANDA ======================= -->
+  <section id="screen-home" class="screen">
+    <header class="mb-4">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">MIND-SHIFT</p>
+          <h1 class="text-2xl font-extrabold mt-1">Beranda</h1>
+        </div>
+        <button onclick="document.getElementById('kpi-modal').classList.remove('hidden-screen')" class="bg-[#27272D] border border-[#383842] text-[10px] font-bold text-[#9AB08A] px-3 py-1.5 rounded-full shadow-sm">
+          KPI Juri
+        </button>
+      </div>
     </header>
 
-    <!-- Metrik utama -->
-    <div class="px-5 mt-2 grid grid-cols-2 gap-3">
-      <div class="card p-4">
-        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Poin Kognitif</p>
-        <p id="dash-cp" class="text-[24px] font-bold text-white mt-1 font-mono-tab">1,250</p>
-        <p class="text-[11px] text-slate-500 mt-0.5">CP terkumpul</p>
+    <!-- Dasbor Pemulihan -->
+    <div class="grid grid-cols-2 gap-3 mb-5">
+      <div class="card p-3.5">
+        <p class="text-[10px] uppercase text-slate-400 font-semibold">Cognitive Points</p>
+        <p id="dash-cp" class="text-xl font-bold font-mono-tab mt-1">1,250</p>
+        <p class="text-[9px] text-[#9AB08A] mt-0.5">Target: 1.250 CP</p>
       </div>
-      <div class="card p-4">
-        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Hari Bersih</p>
-        <p class="text-[24px] font-bold mt-1 font-mono-tab" style="color:var(--sage-light);">12</p>
-        <p class="text-[11px] text-slate-500 mt-0.5">hari berturut-turut</p>
+      <div class="card p-3.5">
+        <p class="text-[10px] uppercase text-slate-400 font-semibold">Streak Bersih</p>
+        <p class="text-xl font-bold font-mono-tab mt-1 text-[#BEAEE2]">14 <span class="text-xs font-normal">Hari</span></p>
       </div>
     </div>
 
-    <!-- PFC Recovery -->
-    <div class="px-5 mt-4">
-      <div class="card p-4">
-        <div class="flex items-center justify-between mb-2.5">
-          <p class="text-[12.5px] font-semibold text-white">Pemulihan Prefrontal Cortex</p>
-          <p id="pfc-percent" class="text-[12.5px] font-bold font-mono-tab" style="color:var(--sage-light);">50%</p>
+    <!-- Fase 1: Precontemplation -->
+    <div class="mb-5">
+      <h2 class="text-[11px] uppercase tracking-wider text-[#9AB08A] font-bold mb-2">Fase 1: Precontemplation</h2>
+      <div class="card p-4 perspective-1000">
+        <p class="text-sm font-bold mb-1">Interactive Myth-Buster</p>
+        <div id="myth-card" class="flip-card w-full h-32 mt-3 cursor-pointer" onclick="flipMythCard()">
+          <div class="flip-card-inner w-full h-full relative">
+            <div class="flip-card-front absolute w-full h-full bg-[#2A2A30] border border-[#4A4A5A] rounded-xl flex flex-col items-center justify-center p-4 text-center shadow-lg">
+              <span class="text-2xl mb-1">🤔</span>
+              <p class="text-xs font-semibold">"Vape tanpa nikotin aman untuk fungsi kognitif otak."</p>
+              <p class="text-[9px] text-slate-400 mt-2">Ketuk untuk menebak Mitos/Fakta</p>
+            </div>
+            <div class="flip-card-back absolute w-full h-full bg-[#9AB08A]/20 border border-[#9AB08A] rounded-xl flex flex-col items-center justify-center p-4 text-center shadow-lg">
+              <p class="text-sm font-bold text-[#9AB08A]">MITOS!</p>
+              <p class="text-[10px] mt-1 text-slate-200">Aerosol memicu neuro-inflamasi pada sirkuit PFC.</p>
+              <p class="text-xs font-bold font-mono-tab text-[#BEAEE2] mt-2">+50 CP Diperoleh</p>
+            </div>
+          </div>
         </div>
-        <div class="pfc-bar-bg">
-          <div id="pfc-bar-fill" class="pfc-bar-fill" style="width:50%;"></div>
-        </div>
-        <p class="text-[11px] text-slate-500 mt-2.5 leading-relaxed">Estimasi regulasi sirkuit dopamin berdasarkan konsistensi sesi defleksi kognitif Anda.</p>
       </div>
     </div>
 
-    <!-- Status kesiapan mental Berbasis TTM -->
-    <div class="px-5 mt-4">
+    <!-- Fase 2: Contemplation -->
+    <div class="mb-5">
+      <h2 class="text-[11px] uppercase tracking-wider text-[#9AB08A] font-bold mb-2">Fase 2: Contemplation</h2>
       <div class="card p-4">
-        <p class="text-[12.5px] font-semibold text-white mb-3">Status Kesiapan Mental</p>
-        <div class="grid grid-cols-2 gap-2">
-          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'belum')">Belum Tertarik</button>
-          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'ragu')">Ragu-ragu</button>
-          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'siap')">Siap Beraksi</button>
-          <button class="mood-btn text-[12px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3); border:1px solid var(--slate-3);" onclick="selectMood(this,'detoks')">Sedang Detoks</button>
+        <p class="text-sm font-bold mb-1">Cost-Benefit Neuro-Calculator</p>
+        <p class="text-[11px] text-slate-400 mb-3">Geser estimasi pengeluaran liquid/minggu Anda.</p>
+        <input type="range" id="liquid-slider" min="20000" max="200000" step="10000" value="50000" class="w-full mb-3" oninput="calculateBenefits()">
+        <div class="flex justify-between items-center text-xs font-bold bg-[#2A2A30] p-3 rounded-xl border border-[#383842]">
+          <div>
+            <p class="text-[9px] text-slate-400 font-normal">Diselamatkan/tahun</p>
+            <p id="calc-money" class="text-[#D9C3A9] font-mono-tab mt-0.5">Rp 2.600.000</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[9px] text-slate-400 font-normal">Pemulihan Memori</p>
+            <p id="calc-memory" class="text-[#BEAEE2] font-mono-tab mt-0.5">18%</p>
+          </div>
         </div>
-        <div id="mood-feedback" class="mt-3 text-[12px] text-slate-400 leading-relaxed hidden-screen"></div>
       </div>
     </div>
 
-    <div class="px-5 mt-4 mb-2">
+    <!-- Fase 3: Preparation -->
+    <div class="mb-2">
+      <h2 class="text-[11px] uppercase tracking-wider text-[#9AB08A] font-bold mb-2">Fase 3: Preparation</h2>
       <div class="card p-4">
-        <p class="text-[12.5px] font-semibold text-white mb-1">Riwayat Sesi Terakhir</p>
-        <p id="last-session-log" class="text-[12px] text-slate-500">Belum ada sesi yang tercatat hari ini.</p>
+        <p class="text-sm font-bold mb-2">Custom Quitting Contract</p>
+        <label class="text-[10px] text-slate-400 font-semibold">TETAPKAN QUITTING DAY</label>
+        <input type="date" class="custom-input mt-1 mb-3" id="quit-date">
+        <label class="text-[10px] text-slate-400 font-semibold">STRATEGI MANAJEMEN STRES</label>
+        <textarea id="quit-strategy" class="custom-input mt-1 mb-3" rows="2" placeholder="Contoh: Minum air es & main game ABM saat craving."></textarea>
+        <!-- Tombol dibuat mencolok dengan kode HEX -->
+        <button onclick="signContract()" class="w-full bg-[#BEAEE2] text-[#1C1C21] font-extrabold text-xs py-3 rounded-xl shadow-[0_0_15px_rgba(190,174,226,0.3)] active:scale-95 transition">Sepakati Kontrak Mandiri</button>
       </div>
     </div>
-
   </section>
 
-  <!-- ======================= TAB 2: INTERVENSI ABM GAME ======================= -->
+  <!-- ======================= TAB 2: SESI GAME ABM ======================= -->
   <section id="screen-game" class="screen hidden-screen">
-
-    <header class="px-5 pt-6 pb-3">
-      <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">SESI INTERVENSI</p>
-      <h1 class="text-[20px] font-bold text-white mt-0.5">Defleksi Kognitif</h1>
+    <header class="mb-4">
+      <p class="text-[10px] uppercase tracking-widest text-[#9AB08A] font-bold">Fase 4: Action</p>
+      <h1 class="text-2xl font-extrabold mt-1">Sesi Defleksi</h1>
     </header>
 
-    <!-- Panel atas HUD -->
-    <div class="px-5">
-      <div class="card p-4 flex items-center justify-between">
-        <div class="text-center flex-1">
-          <p class="text-[10px] uppercase tracking-wider text-slate-500">Waktu</p>
-          <p id="game-timer" class="text-[19px] font-bold font-mono-tab mt-0.5" style="color:var(--lilac);">03:00</p>
-        </div>
-        <div class="w-px h-9" style="background:var(--slate-3);"></div>
-        <div class="text-center flex-1">
-          <p class="text-[10px] uppercase tracking-wider text-slate-500">Skor</p>
-          <p id="game-score" class="text-[19px] font-bold font-mono-tab mt-0.5 text-white">0</p>
-        </div>
-        <div class="w-px h-9" style="background:var(--slate-3);"></div>
-        <div class="text-center flex-1">
-          <p class="text-[10px] uppercase tracking-wider text-slate-500">Streak</p>
-          <p id="game-streak" class="text-[19px] font-bold font-mono-tab mt-0.5" style="color:var(--sage-light);">x0</p>
-        </div>
+    <div class="card p-3 flex items-center justify-between bg-[#2A2A30] mb-4">
+      <div class="text-center flex-1">
+        <p class="text-[9px] uppercase tracking-widest text-slate-400">Timer Wajib</p>
+        <p id="game-timer" class="text-xl font-bold font-mono-tab text-[#BEAEE2] mt-0.5">10:00</p>
+      </div>
+      <div class="w-px h-8 bg-[#383842]"></div>
+      <div class="text-center flex-1">
+        <p class="text-[9px] uppercase tracking-widest text-slate-400">Skor Sesi</p>
+        <p id="game-score" class="text-xl font-bold font-mono-tab mt-0.5 text-[#9AB08A]">0</p>
       </div>
     </div>
 
     <!-- Arena Game -->
-    <div class="px-5 mt-4">
-      <div id="game-arena">
-
-        <!-- Instruction overlay -->
-        <div id="game-overlay" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center" style="background:rgba(15,17,23,0.92);">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--lilac)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
-            <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>
-          </svg>
-          <p class="text-[13px] font-semibold text-white">Regulasi Atensi Aktif</p>
-          <p class="text-[12px] text-slate-400 mt-2 leading-relaxed max-w-[260px]">
-            Ketuk target buah sehat secepat mungkin. Saat target vape muncul, jangan tekan kotaknya — tekan tombol BYPASS untuk melatih kontrol inhibisi otakmu.
-          </p>
-          <button onclick="startGameSession()" class="mt-5 text-[13px] font-semibold px-6 py-2.5 rounded-xl" style="background:var(--sage); color:#10130C;">
-            Mulai Sesi Defleksi
-          </button>
-        </div>
-
-        <!-- Session summary overlay -->
-        <div id="game-summary" class="absolute inset-0 flex-col items-center justify-center p-6 text-center hidden-screen" style="background:rgba(15,17,23,0.95);">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
-            <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
-          </svg>
-          <p class="text-[13px] font-semibold text-white">Sesi Selesai</p>
-          <p class="text-[12px] text-slate-400 mt-1">Performa kognitif tercatat ke profil Anda.</p>
-          <div class="grid grid-cols-2 gap-2.5 w-full max-w-[260px] mt-4">
-            <div class="card p-2.5">
-              <p class="text-[10px] text-slate-500 uppercase">Skor Sesi</p>
-              <p id="summary-score" class="text-[16px] font-bold text-white font-mono-tab mt-0.5">0</p>
-            </div>
-            <div class="card p-2.5">
-              <p class="text-[10px] text-slate-500 uppercase">Streak Terbaik</p>
-              <p id="summary-streak" class="text-[16px] font-bold font-mono-tab mt-0.5" style="color:var(--sage-light);">x0</p>
-            </div>
-          </div>
-          <button onclick="closeSummary()" class="mt-5 text-[13px] font-semibold px-6 py-2.5 rounded-xl" style="background:var(--slate-3); color:white;">
-            Kembali ke Dashboard
-          </button>
-        </div>
-
+    <div id="game-arena">
+      <div id="game-overlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-[#1C1C21]/95 backdrop-blur-md">
+        <span class="text-4xl mb-3">🎯</span>
+        <h2 class="text-lg font-bold text-white mb-2">Casual Fruit Squish</h2>
+        <p class="text-[12px] text-slate-300 leading-relaxed mb-6">
+          <span class="text-[#9AB08A] font-bold">Desirable Difficulty:</span> Sesi ini wajib diselesaikan dalam <b>10 Menit</b> penuh. Ketuk buah untuk +10 CP. Abaikan Vape dengan tombol <b>BYPASS</b> untuk +5 CP.
+        </p>
+        <button onclick="startGame()" class="bg-[#9AB08A] text-[#1C1C21] px-8 py-3 rounded-xl text-sm font-extrabold shadow-[0_0_20px_rgba(154,176,138,0.5)] active:scale-95 transition">
+          Mulai Latihan PFC (10 Menit)
+        </button>
       </div>
-
-      <button id="abort-session-btn" onclick="abortGameSession()" class="hidden-screen w-full mt-3 text-[12px] font-medium py-2.5 rounded-xl text-slate-400" style="background:var(--slate-2); border:1px solid var(--slate-3);">
-        Hentikan Sesi
-      </button>
     </div>
-
   </section>
 
-  <!-- ======================= TAB 3: DETEKSI ZONA RAWAN (JITAI) ======================= -->
-  <section id="screen-profile" class="screen hidden-screen">
-
-    <header class="px-5 pt-6 pb-3">
-      <p class="text-[11px] uppercase tracking-[0.18em] text-slate-500 font-medium">DETEKSI LOKASI REAL-TIME</p>
-      <h1 class="text-[20px] font-bold text-white mt-0.5">Zona Rawan</h1>
-      <p class="text-[12.5px] text-slate-400 mt-1 leading-relaxed">GPS pintar (JITAI) memantau sirkuit atensimu dari risiko geofencing ekologis.</p>
+  <!-- ======================= TAB 3: RADAR JITAI ======================= -->
+  <section id="screen-radar" class="screen hidden-screen">
+    <header class="mb-4">
+      <p class="text-[10px] uppercase tracking-widest text-[#9AB08A] font-bold">Fase 5: Maintenance</p>
+      <h1 class="text-2xl font-extrabold mt-1">Radar JITAI</h1>
+      <p class="text-[12px] text-slate-400 mt-1">Deteksi Geofencing lokasi rawan pemicu (Haversine Engine).</p>
     </header>
 
-    <div class="px-5 mt-2">
-      <div class="radar-wrap">
-        <div class="radar-ring r1"></div>
-        <div class="radar-ring r2"></div>
-        <div class="radar-ring r3"></div>
-        <div class="radar-pulse"></div>
-        <div class="radar-pulse delay2"></div>
+    <div class="card p-5 mt-2 flex flex-col items-center">
+      <div class="radar-wrap mb-4">
+        <div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div>
+        <div class="radar-sweep"></div>
         <div class="radar-center"></div>
         <div class="risk-dot"></div>
-        <div class="risk-tag">Coffee Shop<br><span class="opacity-70">High-Risk Zone</span></div>
       </div>
-      <p class="text-center text-[12px] text-slate-400 mt-2">
-        <span class="text-[#E2574C] font-semibold">140m</span> dari lokasi Anda
+      <p class="text-xs text-center text-[#9AB08A] font-bold mb-4 bg-[#9AB08A]/10 border border-[#9AB08A]/30 px-4 py-2 rounded-lg">
+        🛰️ Memindai Lingkungan (Pasif)
       </p>
-    </div>
 
-    <!-- JITAI Emergency Notification Box -->
-    <div id="jitai-card-wrap" class="px-5 mt-5">
-      <div id="jitai-card" class="jitai-card card p-4" style="border-color:rgba(226,87,76,0.35);">
-        <div class="flex items-start gap-3">
-          <div class="shrink-0 mt-0.5">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 9v4M12 17h.01M10.29 3.86l-8.18 14.14A1 1 0 0 0 3 19.5h18a1 1 0 0 0 .87-1.5L13.71 3.86a1 1 0 0 0-1.72 0Z"/>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <p class="text-[12px] font-semibold tracking-wide" style="color:#F2B5AE;">SINYAL CRAVING TERDETEKSI</p>
-            <p class="text-[13px] text-slate-200 mt-1.5 leading-relaxed">
-              Wangi asap vape di sekitar tongkrongan mulai memicu otakmu? Jangan biarkan sirkuitmu dibajak. Mainkan Fruit Squish sekarang.
-            </p>
-          </div>
-        </div>
-        <div class="flex gap-2.5 mt-4">
-          <button onclick="takeChallenge()" class="flex-1 text-[13px] font-semibold py-2.5 rounded-xl" style="background:var(--sage); color:#10130C;">
-            Ambil Tantangan
-          </button>
-          <button onclick="dismissChallenge()" class="flex-1 text-[13px] font-medium py-2.5 rounded-xl text-slate-300" style="background:var(--slate-3);">
-            Nanti Saja
-          </button>
-        </div>
-      </div>
-
-      <div id="safe-banner" class="safe-banner card p-3.5 hidden-screen items-center gap-2.5 flex" style="border-color:rgba(138,154,106,0.3);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--sage)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
-          <path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/>
-        </svg>
-        <p class="text-[12.5px] text-slate-300">Alert ditutup. Tetap waspada, sirkuit Anda aman.</p>
+      <div class="w-full border-t border-[#383842] pt-4">
+        <p class="text-[11px] font-bold text-center mb-3 text-slate-400">Simulasi Algoritma Juri (d ≤ 50m):</p>
+        <button onclick="simulateJITAI(true)" class="w-full bg-[#E2726E]/20 text-[#E2726E] border border-[#E2726E]/50 py-3 rounded-xl text-xs font-extrabold mb-2 active:scale-95 transition">
+          Kirim Sinyal Bahaya & Buka Paksa Game
+        </button>
       </div>
     </div>
-
-    <!-- Quick mini stat strip -->
-    <div class="px-5 mt-6 grid grid-cols-2 gap-3">
-      <div class="card p-3.5">
-        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Poin Kognitif</p>
-        <p id="home-cp-mini" class="text-[18px] font-bold text-white mt-1 font-mono-tab">1,250 CP</p>
-      </div>
-      <div class="card p-3.5">
-        <p class="text-[10.5px] uppercase tracking-wider text-slate-500">Hari Bersih</p>
-        <p class="text-[18px] font-bold mt-1 font-mono-tab" style="color:var(--sage-light);">12 Hari</p>
-      </div>
-    </div>
-
   </section>
 
-  <!-- ======================= BOTTOM NAVIGATION BAR ======================= -->
+  <!-- ======================= TAB 4: KOMUNITAS & PROFIL ======================= -->
+  <section id="screen-community" class="screen hidden-screen">
+    <header class="mb-4">
+      <p class="text-[10px] uppercase tracking-widest text-[#9AB08A] font-bold">Dukungan & Profil</p>
+      <h1 class="text-2xl font-extrabold mt-1">Komunitas</h1>
+    </header>
+
+    <!-- Profil Mini -->
+    <div class="card p-3 mb-4 flex items-center justify-between border-[#9AB08A]/50 bg-[#9AB08A]/5">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-slate-700 rounded-full flex items-center justify-center text-xl">👤</div>
+        <div>
+          <p class="text-xs font-bold text-white">Sofi (Anda)</p>
+          <p class="text-[10px] text-slate-400">Fase Pemulihan: Maintenance</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-[10px] uppercase text-slate-400 font-bold">Saldo Poin</p>
+        <p class="text-sm font-bold font-mono-tab text-[#9AB08A]" id="profile-cp">1,250 CP</p>
+      </div>
+    </div>
+
+    <!-- Anonymous Chat -->
+    <div class="card p-4 mb-4 flex flex-col" style="height: 280px;">
+      <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span>💬</span> Anonymous Support</h2>
+      
+      <!-- Chat Feed -->
+      <div id="chat-feed" class="flex-1 overflow-y-auto space-y-3 mb-3 pr-1 scrollbar-hide">
+        <div class="bg-[#2A2A30] p-3 rounded-xl border border-[#383842]">
+          <div class="flex items-center gap-2 mb-1">
+            <p class="text-[11px] font-bold text-[#BEAEE2]">User_72X</p>
+            <span class="text-[8px] bg-[#9AB08A]/20 text-[#9AB08A] px-1.5 py-0.5 rounded border border-[#9AB08A]/30">Peer-Ambassador</span>
+          </div>
+          <p class="text-xs text-slate-300">Craving itu wajar. Mainkan Fruit Squish 10 menit, kalian pasti bisa tahan! 🌊</p>
+        </div>
+      </div>
+
+      <!-- Chat Input (Kontras Ditingkatkan) -->
+      <div class="flex gap-2 border-t border-[#383842] pt-3">
+        <input type="text" id="chat-input" placeholder="Ketik dukungan anonim..." class="custom-input py-2 flex-1 text-white">
+        <!-- Tombol Kirim Cerah -->
+        <button onclick="sendChat()" class="bg-[#9AB08A] text-[#1C1C21] px-5 rounded-xl text-xs font-extrabold shadow-[0_0_10px_rgba(154,176,138,0.4)] active:scale-95 transition">Kirim</button>
+      </div>
+    </div>
+
+    <!-- Penukaran Reward (Kontras Ditingkatkan) -->
+    <div class="card p-4">
+      <h2 class="text-sm font-bold mb-3 flex items-center gap-2"><span>☕</span> Penukaran Reward UMKM</h2>
+      <div class="flex items-center justify-between bg-[#2A2A30] p-3 rounded-xl border border-[#383842]">
+        <div>
+          <p class="text-xs font-bold text-white">Voucer Kopi Senja 20%</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">Potongan Riil UMKM Mitra</p>
+        </div>
+        <!-- Tombol Tukar Cerah -->
+        <button onclick="claimReward()" class="bg-[#D9C3A9] text-[#1C1C21] px-4 py-2 rounded-lg text-[10px] font-extrabold shadow-[0_0_10px_rgba(217,195,169,0.4)] active:scale-95 transition">
+          Tukar 500 CP
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= BOTTOM NAVIGATION ======================= -->
   <nav id="bottom-nav">
     <button class="nav-btn active" id="nav-home" onclick="switchTab('home')">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H10v7H4a1 1 0 0 1-1-1Z"/>
-      </svg>
-      <span class="text-[10.5px] font-medium">Dashboard</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span class="mt-1">Beranda</span>
     </button>
     <button class="nav-btn" id="nav-game" onclick="switchTab('game')">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="2" y="7" width="20" height="11" rx="3"/><path d="M7 11v2M6 12h2M16 11.5h.01M18.5 13h.01"/>
-      </svg>
-      <span class="text-[10.5px] font-medium">ABM Game</span>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="17" cy="12" r="1"/></svg><span class="mt-1">Sesi</span>
     </button>
-    <button class="nav-btn" id="nav-profile" onclick="switchTab('profile')">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
-      </svg>
-      <span class="text-[10.5px] font-medium">Zona Rawan</span>
+    <button class="nav-btn" id="nav-radar" onclick="switchTab('radar')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M2 12h20"/><circle cx="12" cy="12" r="4"/></svg><span class="mt-1">Radar</span>
+    </button>
+    <button class="nav-btn" id="nav-community" onclick="switchTab('community')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span class="mt-1">Komunitas</span>
     </button>
   </nav>
+
+  <!-- JITAI Push Notification -->
+  <div id="jitai-toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 w-[90%] max-w-[350px] bg-[#E2726E] text-white p-4 rounded-xl shadow-2xl z-50 hidden-screen toast border border-red-300">
+    <div class="flex items-start gap-3">
+      <span class="text-2xl">🚨</span>
+      <div>
+        <p class="text-sm font-bold">Geofencing Alert: Coffee Shop</p>
+        <p id="jitai-msg" class="text-xs mt-1 leading-relaxed">Jarak d ≤ 50m. Sistem meluncurkan paksa ABM Game untuk mengalihkan atensi Anda!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Validasi Juri Modal -->
+  <div id="kpi-modal" class="fixed inset-0 bg-[#1C1C21]/90 backdrop-blur-sm z-50 hidden-screen flex flex-col items-center justify-center p-6">
+    <div class="card p-6 w-full max-w-[340px] text-center border-[#9AB08A]">
+      <p class="text-[10px] text-[#9AB08A] font-bold tracking-widest uppercase mb-2">Validasi Fungsional</p>
+      <h2 class="text-xl font-bold mb-4">Laporan Klinis (KPI)</h2>
+      <div class="bg-[#2A2A30] p-3 rounded-xl mb-3 text-left border border-[#383842]">
+        <p class="text-xs text-slate-400">Peningkatan Kontrol Inhibisi (14 Hari)</p>
+        <p class="text-lg font-bold text-[#9AB08A] font-mono-tab">85.4% <span class="text-xs font-normal">Tercapai</span></p>
+      </div>
+      <div class="bg-[#2A2A30] p-3 rounded-xl mb-6 text-left border border-[#383842]">
+        <p class="text-xs text-slate-400">Waktu Reaksi Bypass Vape</p>
+        <p class="text-lg font-bold text-[#BEAEE2] font-mono-tab">< 380 ms <span class="text-xs font-normal">Optimal</span></p>
+      </div>
+      <button onclick="document.getElementById('kpi-modal').classList.add('hidden-screen')" class="w-full bg-[#383842] text-white py-3 rounded-xl text-sm font-extrabold active:scale-95 transition">Tutup Laporan</button>
+    </div>
+  </div>
 
 </div>
 
 <script>
-/* =====================================================
-   GLOBAL STATE
-===================================================== */
-const state = {
-  cognitivePoints: 1250,
-  cleanDays: 12,
-  pfcRecovery: 50,
-  currentTab: 'home',
-  selectedMood: null
-};
-
-/* =====================================================
-   TAB NAVIGATION ENGINE (FIXED MAP TO ID ALIGNMENT)
-===================================================== */
-function switchTab(tab){
-  document.getElementById('screen-home').classList.add('hidden-screen');
-  document.getElementById('screen-game').classList.add('hidden-screen');
-  document.getElementById('screen-profile').classList.add('hidden-screen');
-  document.getElementById('nav-home').classList.remove('active');
-  document.getElementById('nav-game').classList.remove('active');
-  document.getElementById('nav-profile').classList.remove('active');
-
-  document.getElementById('screen-' + tab).classList.remove('hidden-screen');
-  document.getElementById('nav-' + tab).classList.add('active');
-  state.currentTab = tab;
+// ==========================================
+// UTILITIES & GLOBAL STATE
+// ==========================================
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('general-toast');
+  toast.querySelector('#toast-msg').innerText = msg;
+  toast.style.backgroundColor = isError ? "#E2726E" : "#9AB08A";
+  toast.style.borderColor = isError ? "#E2726E" : "#B8C7AD";
+  toast.style.color = isError ? "white" : "#1C1C21";
+  toast.querySelector('span').innerText = isError ? "⚠️" : "✅";
+  
+  toast.classList.remove('hidden-screen');
+  setTimeout(() => toast.classList.add('hidden-screen'), 3000);
 }
 
-/* =====================================================
-   TAB: JITAI ALERTS INTERACTION
-===================================================== */
-function takeChallenge(){
-  switchTab('game');
+function updateCP(points) {
+  let cp = parseInt(document.getElementById('dash-cp').innerText.replace(/,/g, ''));
+  let newCp = cp + points;
+  document.getElementById('dash-cp').innerText = newCp.toLocaleString('en-US');
+  document.getElementById('profile-cp').innerText = newCp.toLocaleString('en-US') + " CP";
 }
 
-function dismissChallenge(){
-  document.getElementById('jitai-card-wrap').querySelector('#jitai-card').classList.add('hidden-screen');
-  document.getElementById('safe-banner').classList.remove('hidden-screen');
+// ==========================================
+// 1. NAVIGATION
+// ==========================================
+function switchTab(tabId) {
+  ['home', 'game', 'radar', 'community'].forEach(t => {
+    document.getElementById('screen-' + t).classList.add('hidden-screen');
+    document.getElementById('nav-' + t).classList.remove('active');
+  });
+  document.getElementById('screen-' + tabId).classList.remove('hidden-screen');
+  document.getElementById('nav-' + tabId).classList.add('active');
 }
 
-/* =====================================================
-   TAB: ABM COGNITIVE DEFLECTION GAME ENGINE
-===================================================== */
-const GAME_DURATION = 180; 
-const SPAWN_INTERVAL_MS = 900;
-const TARGET_LIFETIME_MS = 2200;
-
-let gameState = {
-  running: false,
-  timeLeft: GAME_DURATION,
-  score: 0,
-  streak: 0,
-  bestStreak: 0,
-  timerInterval: null,
-  spawnInterval: null,
-  activeTargets: [] 
-};
-
-let targetUid = 0;
-
-function formatTime(sec){
-  const m = Math.floor(sec / 60).toString().padStart(2,'0');
-  const s = (sec % 60).toString().padStart(2,'0');
-  return m + ':' + s;
+// ==========================================
+// 2. BERANDA LOGIC
+// ==========================================
+let mythFlipped = false;
+function flipMythCard() {
+  if (!mythFlipped) {
+    document.getElementById('myth-card').classList.add('flipped');
+    mythFlipped = true;
+    updateCP(50);
+  }
 }
 
-function startGameSession(){
+function calculateBenefits() {
+  const weekly = parseInt(document.getElementById('liquid-slider').value);
+  const annual = weekly * 52;
+  document.getElementById('calc-money').innerText = "Rp " + annual.toLocaleString('id-ID');
+  const recovery = Math.min(100, Math.floor(annual / 100000));
+  document.getElementById('calc-memory').innerText = recovery + "%";
+}
+
+function signContract() {
+  const date = document.getElementById('quit-date').value;
+  if(!date) return showToast("Pilih Quitting Day terlebih dahulu!", true);
+  showToast("Kontrak Komitmen Disepakati! Sistem merekam strategi Anda.");
+}
+
+// ==========================================
+// 3. ABM GAME LOGIC
+// ==========================================
+const GAME_TIME = 600; // 10 menit
+let gameState = { running: false, score: 0, time: GAME_TIME, timerId: null, spawnId: null };
+
+function startGame(force = false) {
   document.getElementById('game-overlay').classList.add('hidden-screen');
-  document.getElementById('game-summary').classList.add('hidden-screen');
-  document.getElementById('abort-session-btn').classList.remove('hidden-screen');
-
   gameState.running = true;
-  gameState.timeLeft = GAME_DURATION;
   gameState.score = 0;
-  gameState.streak = 0;
-  gameState.bestStreak = 0;
-  gameState.activeTargets = [];
-
-  updateGameHud();
-
-  gameState.timerInterval = setInterval(() => {
-    gameState.timeLeft--;
-    updateGameHud();
-    if(gameState.timeLeft <= 0){
-      endGameSession();
-    }
+  gameState.time = GAME_TIME;
+  document.getElementById('game-score').innerText = "0";
+  
+  gameState.timerId = setInterval(() => {
+    gameState.time--;
+    let m = Math.floor(gameState.time / 60).toString().padStart(2, '0');
+    let s = (gameState.time % 60).toString().padStart(2, '0');
+    document.getElementById('game-timer').innerText = `${m}:${s}`;
+    if (gameState.time <= 0) endGame();
   }, 1000);
 
-  gameState.spawnInterval = setInterval(spawnTarget, SPAWN_INTERVAL_MS);
+  spawnTarget();
 }
 
-function updateGameHud(){
-  document.getElementById('game-timer').textContent = formatTime(Math.max(0,gameState.timeLeft));
-  document.getElementById('game-score').textContent = gameState.score;
-  document.getElementById('game-streak').textContent = 'x' + gameState.streak;
-}
-
-function spawnTarget(){
-  if(!gameState.running) return;
+function spawnTarget() {
+  if (!gameState.running) return;
   const arena = document.getElementById('game-arena');
-  const arenaRect = arena.getBoundingClientRect();
-
-  const margin = 15;
-  const targetW = 80; 
-  const targetH = 80;
-  const maxX = Math.max(margin, arenaRect.width - targetW - margin);
-  const maxY = Math.max(margin, arenaRect.height - targetH - margin);
-  const x = margin + Math.random() * (maxX - margin);
-  const y = margin + Math.random() * (maxY - margin);
-
-  const isVape = Math.random() < 0.38; 
-  const uid = 'tgt-' + (targetUid++);
-
+  const isVape = Math.random() < 0.4;
+  
   const el = document.createElement('div');
-  el.className = 'target';
-  el.id = uid;
-  el.style.left = x + 'px';
-  el.style.top = y + 'px';
-
-  if(!isVape){
-    const fruits = ['🍎', '🍓', '🍊', '🍇'];
-    const randomFruit = fruits[Math.floor(Math.random() * fruits.length)];
-    
+  el.className = "target absolute flex flex-col items-center gap-1 z-10";
+  el.style.left = Math.max(5, Math.random() * 80) + "%";
+  el.style.top = Math.max(5, Math.random() * 70) + "%";
+  
+  if (isVape) {
     el.innerHTML = `
-      <button onclick="hitHealthyTarget('${uid}')"
-        class="flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-transform active:scale-95"
-        style="background:rgba(138,154,106,0.15); border:1.5px solid var(--sage); box-shadow: 0 4px 12px rgba(138,154,106,0.15);">
-        <span class="text-2xl">${randomFruit}</span>
-        <span class="text-[8px] font-bold tracking-wider mt-0.5" style="color:var(--sage-light);">HIT</span>
-      </button>`;
+      <div onclick="hitVape(this.parentElement)" class="w-16 h-16 bg-[#16161A] border-2 border-[#E2726E] rounded-2xl flex items-center justify-center text-4xl shadow-lg cursor-pointer">🚬</div>
+      <button onclick="hitBypass(this.parentElement, event)" class="bg-[#BEAEE2] text-[#1C1C21] px-5 py-1.5 rounded-md text-[11px] font-extrabold shadow-[0_4px_10px_rgba(190,174,226,0.3)] active:scale-95 transition">BYPASS</button>
+    `;
   } else {
+    const fruits = ['🍎','🍇','🍓','🍊'];
+    const fruit = fruits[Math.floor(Math.random() * fruits.length)];
     el.innerHTML = `
-      <div class="flex flex-col items-center gap-1">
-        <div class="w-14 h-14 flex items-center justify-center rounded-2xl" style="background:rgba(226,87,76,0.12); border:1.5px solid rgba(226,87,76,0.55);">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E2574C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="10" width="14" height="6" rx="2"/>
-            <path d="M17 12h2.5a1.5 1.5 0 0 1 0 3H17"/>
-            <path d="M6 10V8a2 2 0 0 1 2-2h1"/>
-          </svg>
-        </div>
-        <button onclick="hitBypassButton('${uid}')"
-          class="text-[9px] font-extrabold px-3 py-1 rounded-md tracking-wider shadow-md transition-transform active:scale-95"
-          style="background:var(--lilac); color:#1A1D27;">
-          BYPASS
-        </button>
-      </div>`;
-    
-    el.addEventListener('click', function(e){
-      if(e.target.tagName.toLowerCase() !== 'button'){
-        missVapeTarget(uid);
-      }
-    });
+      <button onclick="hitFruit(this.parentElement, event)" class="w-16 h-16 bg-[#27272D] border-2 border-[#9AB08A] rounded-2xl flex items-center justify-center text-4xl shadow-[0_4px_15px_rgba(154,176,138,0.2)] active:scale-95 transition cursor-pointer">${fruit}</button>
+    `;
   }
-
+  
   arena.appendChild(el);
-
-  const timeoutHandle = setTimeout(() => {
-    expireTarget(uid, isVape);
-  }, TARGET_LIFETIME_MS);
-
-  gameState.activeTargets.push({ id: uid, type: isVape ? 'vape' : 'healthy', timeoutHandle });
+  setTimeout(() => { if (el.parentNode) { el.style.opacity = '0'; setTimeout(() => el.remove(), 200); } }, 1800);
+  if (gameState.running) gameState.spawnId = setTimeout(spawnTarget, 900);
 }
 
-function removeTargetFromState(uid){
-  const idx = gameState.activeTargets.findIndex(t => t.id === uid);
-  if(idx !== -1){
-    clearTimeout(gameState.activeTargets[idx].timeoutHandle);
-    gameState.activeTargets.splice(idx, 1);
-  }
+function createFloatingText(x, y, text, colorClass) {
+  const arena = document.getElementById('game-arena');
+  const rect = arena.getBoundingClientRect();
+  const floatEl = document.createElement('div');
+  floatEl.className = `floating-score ${colorClass}`;
+  floatEl.innerText = text;
+  floatEl.style.left = (x - rect.left - 10) + 'px';
+  floatEl.style.top = (y - rect.top - 20) + 'px';
+  arena.appendChild(floatEl);
+  setTimeout(() => floatEl.remove(), 800);
 }
 
-function removeTargetEl(uid){
-  const el = document.getElementById(uid);
-  if(el){
-    el.classList.add('expiring');
-    setTimeout(() => el.remove(), 260);
-  }
-}
-
-function spawnFloatScore(uid, text, color){
-  const el = document.getElementById(uid);
-  if(!el) return;
-  const float = document.createElement('div');
-  float.className = 'float-score';
-  float.style.color = color;
-  float.style.left = el.style.left;
-  float.style.top = el.style.top;
-  float.textContent = text;
-  document.getElementById('game-arena').appendChild(float);
-  setTimeout(() => float.remove(), 900);
-}
-
-function hitHealthyTarget(uid){
-  if(!gameState.running) return;
-  removeTargetFromState(uid);
+function hitFruit(parent, event) {
+  if (!gameState.running) return;
   gameState.score += 10;
-  gameState.streak += 1;
-  gameState.bestStreak = Math.max(gameState.bestStreak, gameState.streak);
-  spawnFloatScore(uid, '+10', '#B2AC88');
-  removeTargetEl(uid);
-  updateGameHud();
+  document.getElementById('game-score').innerText = gameState.score;
+  createFloatingText(event.clientX, event.clientY, '+10 CP', 'text-[#B8C7AD]');
+  parent.remove();
 }
 
-function hitBypassButton(uid){
-  if(!gameState.running) return;
-  removeTargetFromState(uid);
+function hitBypass(parent, event) {
+  event.stopPropagation(); 
+  if (!gameState.running) return;
   gameState.score += 5;
-  gameState.streak += 1;
-  gameState.bestStreak = Math.max(gameState.bestStreak, gameState.streak);
-  spawnFloatScore(uid, '+5 Bypass', '#E6E6FA');
-  removeTargetEl(uid);
-  updateGameHud();
+  document.getElementById('game-score').innerText = gameState.score;
+  createFloatingText(event.clientX, event.clientY, '+5 CP', 'text-[#BEAEE2]');
+  parent.remove();
 }
 
-function missVapeTarget(uid){
-  if(!gameState.running) return;
-  removeTargetFromState(uid);
-  gameState.streak = 0;
-  spawnFloatScore(uid, 'Salah!', '#E2574C');
-  removeTargetEl(uid);
-  updateGameHud();
+function hitVape(parent) {
+  if (!gameState.running) return;
+  gameState.score -= 5;
+  document.getElementById('game-score').innerText = gameState.score;
+  const arena = document.getElementById('game-arena');
+  arena.classList.add('shake-anim');
+  if("vibrate" in navigator) navigator.vibrate(200);
+  setTimeout(() => arena.classList.remove('shake-anim'), 400);
+  parent.remove();
 }
 
-function expireTarget(uid, wasVape){
-  if(!gameState.running) return;
-  removeTargetFromState(uid);
-  if(!wasVape){
-    gameState.streak = 0;
-    updateGameHud();
-  }
-  removeTargetEl(uid);
-}
-
-function clearAllTargets(){
-  gameState.activeTargets.forEach(t => clearTimeout(t.timeoutHandle));
-  gameState.activeTargets = [];
-  document.getElementById('game-arena').querySelectorAll('.target, .float-score').forEach(el => el.remove());
-}
-
-function endGameSession(){
+function endGame() {
   gameState.running = false;
-  clearInterval(gameState.timerInterval);
-  clearInterval(gameState.spawnInterval);
-  clearAllTargets();
+  clearInterval(gameState.timerId);
+  clearTimeout(gameState.spawnId);
+  updateCP(gameState.score);
 
-  state.cognitivePoints += gameState.score;
-  refreshDashboardNumbers();
-
-  state.pfcRecovery = Math.min(100, state.pfcRecovery + 2);
-  document.getElementById('pfc-bar-fill').style.width = state.pfcRecovery + '%';
-  document.getElementById('pfc-percent').textContent = state.pfcRecovery + '%';
-
-  document.getElementById('last-session-log').textContent =
-    `Sesi terbaru: skor ${gameState.score}, streak terbaik x${gameState.bestStreak}. +${gameState.score} CP ditambahkan.`;
-
-  document.getElementById('summary-score').textContent = gameState.score;
-  document.getElementById('summary-streak').textContent = 'x' + gameState.bestStreak;
-
-  document.getElementById('abort-session-btn').classList.add('hidden-screen');
-  const summary = document.getElementById('game-summary');
-  summary.classList.remove('hidden-screen');
-  summary.classList.add('flex');
+  document.getElementById('game-arena').innerHTML = `
+    <div id="game-overlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-[#1C1C21]/95 backdrop-blur-md">
+      <h2 class="text-xl font-bold text-[#9AB08A] mb-2">10 Menit Selesai!</h2>
+      <p class="text-[12px] text-slate-300 mb-4">Sirkuit PFC telah dilatih ulang.</p>
+      <p class="text-3xl font-mono-tab font-bold mb-6">+${gameState.score} CP</p>
+      <button onclick="resetGameUI()" class="bg-[#27272D] border border-[#383842] text-white px-8 py-3 rounded-xl text-sm font-extrabold active:scale-95 transition">Kembali ke Beranda</button>
+    </div>
+  `;
 }
 
-function abortGameSession(){
-  if(!gameState.running) return;
-  endGameSession();
+function resetGameUI() {
+  document.getElementById('game-timer').innerText = "10:00";
+  document.getElementById('game-score').innerText = "0";
+  switchTab('home');
+  setTimeout(() => {
+    document.getElementById('game-arena').innerHTML = `
+      <div id="game-overlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center bg-[#1C1C21]/95 backdrop-blur-md">
+        <span class="text-4xl mb-3">🎯</span>
+        <h2 class="text-lg font-bold text-white mb-2">Casual Fruit Squish</h2>
+        <p class="text-[12px] text-slate-300 leading-relaxed mb-6"><span class="text-[#9AB08A] font-bold">Desirable Difficulty:</span> Sesi ini wajib diselesaikan dalam <b>10 Menit</b> penuh. Ketuk buah untuk +10 CP. Abaikan Vape dengan tombol <b>BYPASS</b> untuk +5 CP.</p>
+        <button onclick="startGame()" class="bg-[#9AB08A] text-[#1C1C21] px-8 py-3 rounded-xl text-sm font-extrabold shadow-[0_0_20px_rgba(154,176,138,0.5)] active:scale-95 transition">Mulai Latihan PFC (10 Menit)</button>
+      </div>
+    `;
+  }, 500);
 }
 
-function closeSummary(){
-  document.getElementById('game-summary').classList.add('hidden-screen');
-  document.getElementById('game-summary').classList.remove('flex');
-  document.getElementById('game-overlay').classList.remove('hidden-screen');
-  switchTab('home'); // Menuju Dashboard Utama secara presisi
+// ==========================================
+// 4. RADAR & JITAI
+// ==========================================
+function simulateJITAI() {
+  const toast = document.getElementById('jitai-toast');
+  if ("vibrate" in navigator) navigator.vibrate([1000, 200, 1000]); 
+  toast.classList.remove('hidden-screen');
+  
+  setTimeout(() => {
+    toast.classList.add('hidden-screen');
+    switchTab('game');
+    resetGameUI();
+    setTimeout(() => startGame(true), 600);
+  }, 3500);
 }
 
-/* =====================================================
-   TAB: REWARD DASHBOARD LOGIC
-===================================================== */
-function refreshDashboardNumbers(){
-  document.getElementById('dash-cp').textContent = state.cognitivePoints.toLocaleString('id-ID');
-  document.getElementById('home-cp-mini').textContent = state.cognitivePoints.toLocaleString('id-ID') + ' CP';
+// ==========================================
+// 5. KOMUNITAS (CHAT & REWARD)
+// ==========================================
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if(!text) return;
+
+  const feed = document.getElementById('chat-feed');
+  const bubble = document.createElement('div');
+  bubble.className = "bg-[#9AB08A]/10 p-3 rounded-xl border border-[#9AB08A]/30 animate-[slideDown_0.3s]";
+  bubble.innerHTML = `
+    <p class="text-[11px] font-bold text-[#B8C7AD] mb-1">Anda (Anonim)</p>
+    <p class="text-xs text-slate-200">${text}</p>
+  `;
+  feed.appendChild(bubble);
+  
+  feed.scrollTop = feed.scrollHeight;
+  input.value = '';
 }
 
-const moodFeedback = {
-  belum: "Tidak masalah jika belum siap sekarang. Identifikasi satu pemicu terkecil hari ini, itu sudah langkah maju.",
-  ragu: "Keraguan adalah bagian normal dari proses pemulihan. Coba sesi defleksi singkat untuk menstabilkan fokus Anda.",
-  siap: "Energi yang bagus untuk dimanfaatkan. Gunakan momentum ini untuk menyelesaikan satu sesi latihan inhibisi sekarang.",
-  detoks: "Fase detoks bisa terasa berat secara fisik maupun mental. Pastikan hidrasi cukup dan istirahat teratur selama proses ini."
-};
-
-function selectMood(btn, key){
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  state.selectedMood = key;
-
-  const feedbackEl = document.getElementById('mood-feedback');
-  feedbackEl.textContent = moodFeedback[key];
-  feedbackEl.classList.remove('hidden-screen');
+function claimReward() {
+  let cp = parseInt(document.getElementById('dash-cp').innerText.replace(/,/g, ''));
+  if(cp >= 500) {
+    updateCP(-500);
+    showToast("Voucer berhasil ditukar! Cek email Anda.");
+  } else {
+    showToast("Poin CP Anda tidak cukup (Butuh 500 CP)", true);
+  }
 }
-
-/* =====================================================
-   INITIALIZATION
-===================================================== */
-document.addEventListener('DOMContentLoaded', () => {
-  refreshDashboardNumbers();
-});
 </script>
-
 </body>
 </html>
